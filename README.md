@@ -3,7 +3,7 @@
 Parrot-AI is an AI-enabled language learning application designed to facilitate interactive conversation and debate practice in multiple languages.
 
 ## Features
-- **Language Practice**: Supports English, German, Spanish, and French.
+- **Language Practice**: Supports English, Hindi, German, Spanish, and French.
 - **Learning Modes**: Choose between Conversation and Debate modes.
 - **Proficiency Levels**: Tailored for Beginner, Intermediate, and Advanced learners.
 - **Custom Scenarios**: Create custom scenarios and roles for practice.
