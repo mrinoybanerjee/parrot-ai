@@ -1,2 +1,3 @@
-backend/venv
+src/venv
 .env
+src/__pycache__

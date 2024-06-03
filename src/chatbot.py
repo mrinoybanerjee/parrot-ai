@@ -1,15 +1,5 @@
-import openai
-from langchain.prompts import (
-    ChatPromptTemplate, 
-    MessagesPlaceholder, 
-    SystemMessagePromptTemplate, 
-    HumanMessagePromptTemplate
-)
-from langchain.chains import LLMChain
-from langchain.chains import ConversationChain
-from langchain.chat_models import ChatOpenAI
-from langchain.memory import ConversationBufferMemory
 import os
+from openai import OpenAI
 
 AUDIO_SPEECH = {
     'English': 'en',
@@ -19,25 +9,23 @@ AUDIO_SPEECH = {
     'Hindi': 'hi'
 }
 
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
 class Chatbot:
-    """Class definition for a single chatbot with memory, created with LangChain."""
+    """Class definition for a single chatbot."""
     
     def __init__(self, engine):
-        """Select backbone large language model, as well as instantiate 
-        the memory for creating language chain in LangChain."""
+        """Select backbone large language model."""
         
         # Instantiate llm
-        if engine == 'OpenAI':
-            self.llm = ChatOpenAI(
-                model_name="gpt-3.5-turbo",
-                temperature=0.7,
-                openai_api_key=os.getenv("OPENAI_API_KEY")
-            )
+        if engine == "OpenAI":
+            self.client = OpenAI()
         else:
-            raise KeyError("Currently unsupported chat model type!")
-        
-        # Instantiate memory
-        self.memory = ConversationBufferMemory(return_messages=True)
+            raise KeyError("Currently unsupported language model type!")
+        # Initialize conversation memory
+        self.memory = []
 
     def instruct(self, role, oppo_role, language, scenario, 
                  session_length, proficiency_level, 
@@ -53,14 +41,7 @@ class Chatbot:
         self.learning_mode = learning_mode
         self.starter = starter
         
-        prompt = ChatPromptTemplate.from_messages([
-            SystemMessagePromptTemplate.from_template(self._specify_system_message()),
-            MessagesPlaceholder(variable_name="history"),
-            HumanMessagePromptTemplate.from_template("""{input}""")
-        ])
-        
-        self.conversation = ConversationChain(memory=self.memory, prompt=prompt, 
-                                              llm=self.llm, verbose=False)
+        self.prompt = self._specify_system_message()
         
     def _specify_system_message(self):
         """Specify the behavior of the chatbot."""
@@ -128,13 +109,77 @@ class Chatbot:
         
         return prompt
 
+    def generate_response(self, input_text):
+        """Generate a response from the model based on the input text."""
+        response = self.client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": self.prompt
+            },
+            {
+                "role": "user",
+                "content": input_text
+            }
+        ]
+        )
+        return response.choices[0].message.content
+        
+
+    def step(self, input_text):
+        """Make one exchange round between two chatbots."""
+        # Generate response from role1
+        response1 = self.generate_response(input_text)
+        self.memory.append({"role": self.role['name'], "text": response1})
+        
+        # Generate response from role2 based on role1's response
+        response2 = self.generate_response(response1)
+        self.memory.append({"role": self.oppo_role['name'], "text": response2})
+
+        translate1 = self.translate(response1)
+        translate2 = self.translate(response2)
+
+        return response1, response2, translate1, translate2
+
+    def translate(self, message):
+        """Translate the generated script into target language."""
+        if self.language == 'English':
+            translation = 'Translation: ' + message
+        else:
+            instruction = f"Translate the following sentence from {self.language} to English: {message}"
+            translation = self.generate_response(instruction)
+        return translation
+
+    def summary(self, script):
+        """Distill key language learning points from the generated scripts."""
+        instruction = f"""The following text is a simulated conversation in 
+        {self.language}. The goal of this text is to aid {self.language} learners to learn
+        real-life usage of {self.language}. Therefore, your task is to summarize the key 
+        learning points based on the given text. Specifically, you should summarize 
+        the key vocabulary, grammar points, and function phrases that could be important 
+        for students learning {self.language}. Your summary should be conducted in English, but
+        use examples from the text in the original language where appropriate.
+        Remember your target students have a proficiency level of 
+        {self.proficiency_level} in {self.language}. Your summarization must match with their 
+        proficiency level. 
+
+        The conversation is: \n{script}"""
+        
+        summary = self.generate_response(instruction)
+        return summary
+
+    def _reset_conversation_history(self):
+        """Reset the conversation history."""
+        self.memory = []
+
+
 class DualChatbot:
-    """Class definition for dual-chatbots interaction system, created with LangChain."""
+    """Class definition for dual-chatbots interaction system."""
 
     def __init__(self, engine, role_dict, language, scenario, proficiency_level, 
                  learning_mode, session_length):
         """Initialize two chatbots with the given parameters."""
-
         self.engine = engine
         self.proficiency_level = proficiency_level
         self.language = language
@@ -161,94 +206,24 @@ class DualChatbot:
 
     def step(self):
         """Make one exchange round between two chatbots."""
+        response1 = self.chatbots['role1']['chatbot'].generate_response(self.input1)
+        self.conversation_history.append({"bot": self.chatbots['role1']['name'], "text": response1})
         
-        output1 = self.chatbots['role1']['chatbot'].conversation.predict(input=self.input1)
-        self.conversation_history.append({"bot": self.chatbots['role1']['name'], "text": output1})
+        self.input2 = response1
         
-        self.input2 = output1
+        response2 = self.chatbots['role2']['chatbot'].generate_response(self.input2)
+        self.conversation_history.append({"bot": self.chatbots['role2']['name'], "text": response2})
         
-        output2 = self.chatbots['role2']['chatbot'].conversation.predict(input=self.input2)
-        self.conversation_history.append({"bot": self.chatbots['role2']['name'], "text": output2})
-        
-        self.input1 = output2
+        self.input1 = response2
 
-        translate1 = self.translate(output1)
-        translate2 = self.translate(output2)
+        translate1 = self.chatbots['role1']['chatbot'].translate(response1)
+        translate2 = self.chatbots['role2']['chatbot'].translate(response2)
 
-        return output1, output2, translate1, translate2
-
-    def translate(self, message):
-        """Translate the generated script into target language."""
-
-        if self.language == 'English':
-            translation = 'Translation: ' + message
-        else:
-            if self.engine == 'OpenAI':
-                self.translator = ChatOpenAI(
-                    model_name="gpt-3.5-turbo",
-                    temperature=0.7,
-                    openai_api_key=os.getenv("OPENAI_API_KEY")
-                )
-            else:
-                raise KeyError("Currently unsupported translation model type!")
-            
-            instruction = """Translate the following sentence from {src_lang} 
-            (source language) to {trg_lang} (target language).
-            Here is the sentence in source language: \n
-            {src_input}."""
-
-            prompt = ChatPromptTemplate(
-                input_variables=["src_lang", "trg_lang", "src_input"],
-                template=instruction,
-            ) 
-
-            translator_chain = LLMChain(llm=self.translator, prompt=prompt)
-            translation = translator_chain.predict(src_lang=self.language,
-                                                trg_lang="English",
-                                                src_input=message)
-
-        return translation
-
-    def summary(self, script):
-        """Distill key language learning points from the generated scripts."""
-
-        if self.engine == 'OpenAI':
-            self.summary_bot = ChatOpenAI(
-                model_name="gpt-3.5-turbo",
-                temperature=0.7,
-                openai_api_key=os.getenv("OPENAI_API_KEY")
-            )
-        else:
-            raise KeyError("Currently unsupported summary model type!")
-
-        instruction = """The following text is a simulated conversation in 
-        {src_lang}. The goal of this text is to aid {src_lang} learners to learn
-        real-life usage of {src_lang}. Therefore, your task is to summarize the key 
-        learning points based on the given text. Specifically, you should summarize 
-        the key vocabulary, grammar points, and function phrases that could be important 
-        for students learning {src_lang}. Your summary should be conducted in English, but
-        use examples from the text in the original language where appropriate.
-        Remember your target students have a proficiency level of 
-        {proficiency} in {src_lang}. You summarization must match with their 
-        proficiency level. 
-
-        The conversation is: \n
-        {script}."""
-
-        prompt = ChatPromptTemplate(
-            input_variables=["src_lang", "proficiency", "script"],
-            template=instruction,
-        )
-
-        summary_chain = LLMChain(llm=self.summary_bot, prompt=prompt)
-        summary = summary_chain.predict(src_lang=self.language,
-                                        proficiency=self.proficiency_level,
-                                        script=script)
-        
-        return summary
+        return response1, response2, translate1, translate2
 
     def _reset_conversation_history(self):
         """Reset the conversation history."""
         self.conversation_history = []
         self.input1 = "Start the conversation."
         self.input2 = "" 
+

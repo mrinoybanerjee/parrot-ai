@@ -1,4 +1,4 @@
-from chatbot import DualChatbot
+from src.chatbot import DualChatbot
 
 def main():
     role_dict = {
@@ -9,7 +9,7 @@ def main():
     chatbot = DualChatbot(
         engine="OpenAI",
         role_dict=role_dict,
-        language="English",
+        language="Hindi",
         scenario="at a restaurant",
         proficiency_level="Beginner",
         learning_mode="Conversation",
@@ -18,7 +18,7 @@ def main():
 
     print("Starting the conversation...")
 
-    for _ in range(8):  # Short conversation
+    for _ in range(2):  # Short conversation
         output1, output2, translate1, translate2 = chatbot.step()
         print(f"Customer: {output1}")
         print(f"Translation: {translate1}")
@@ -27,3 +27,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
