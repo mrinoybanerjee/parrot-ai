@@ -3,3 +3,7 @@ uvicorn==0.18.3
 pydantic==1.10.2
 python-dotenv==1.0.1
 openai
+streamlit
+streamlit-chat
+gtts
+pytest
