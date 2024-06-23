@@ -44,7 +44,8 @@ jobs:
   #     run: flake8 .
 
   build:
-    needs: [test, lint]
+    #needs: [test, lint]
+    needs: test
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3

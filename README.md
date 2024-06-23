@@ -51,6 +51,36 @@ Through my travels, I realized the importance of language to establish deep conn
      chmod +x mistral-7b-instruct-v0.2.Q4_0.llamafile
      ```
 
+## 🌴 Repo Tree
+
+```
+.
+├── .dockerignore
+├── .github
+│   └── workflows
+│       └── ci-cd.yml
+├── .gitignore
+├── Dockerfile
+├── LICENSE
+├── README.md
+├── app.py
+├── conftest.py
+├── pytest.ini
+├── requirements.txt
+├── src
+│   ├── __init__.py
+│   ├── chatbot.py
+│   ├── conversation.py
+│   └── utils.py
+└── tests
+    ├── test_chatbot.py
+    ├── test_conversation.py
+    └── test_utils.py
+
+5 directories, 17 files
+
+```
+
 ## 🖥️ Usage
 
 1. Start the llamafile server:
