@@ -1,8 +1,10 @@
+"""This module contains helper functions to initialize session state and display messages."""
+
+from io import BytesIO
+import time
 import streamlit as st
 from streamlit_chat import message
 from gtts import gTTS
-from io import BytesIO
-import time
 
 AUDIO_SPEECH = {
     'English': 'en',
@@ -14,6 +16,9 @@ AUDIO_SPEECH = {
 AVATAR_SEED = [123, 42]
 
 def initialize_session_state():
+    """
+    Initialize the session state variables.
+    """
     if "bot1_mesg" not in st.session_state:
         st.session_state["bot1_mesg"] = []
 
@@ -35,30 +40,43 @@ def initialize_session_state():
 def show_messages(mesg_1, mesg_2, message_counter,
                   time_delay, batch=False, audio=False,
                   translation=False):
-    """Display conversation exchanges. This helper function supports
-    displaying original texts, translated texts, and audio speech."""
+    """
+    Display conversation exchanges. This helper function supports
+    displaying original texts, translated texts, and audio speech.
+    
+    Args:
+        mesg_1 (dict): The message dictionary for the first speaker.
+        mesg_2 (dict): The message dictionary for the second speaker.
+        message_counter (int): The message counter for the conversation.
+        time_delay (int): The time delay between messages.
+        batch (bool): Whether to show the messages in batch.
+        audio (bool): Whether to show the audio speech.
+        translation (bool): Whether to show the translated messages.
+        
+    Returns:
+        int: The updated message counter.
+    """
 
     for i, mesg in enumerate([mesg_1, mesg_2]):
         # Show original exchange
-        message(f"{mesg['content']}", is_user=i==1, avatar_style="bottts", 
+        message(f"{mesg['content']}", is_user=i==1, avatar_style="bottts",
                 seed=AVATAR_SEED[i],
                 key=message_counter)
         message_counter += 1
-        
         # Mimic time interval between conversations
         if not batch:
             time.sleep(time_delay)
 
         # Show translated exchange
         if translation:
-            message(f"{mesg['translation']}", is_user=i==1, avatar_style="bottts", 
+            message(f"{mesg['translation']}", is_user=i==1, avatar_style="bottts",
                     seed=AVATAR_SEED[i], 
                     key=message_counter)
             message_counter += 1
 
         # Append audio to the exchange
         if audio:
-            tts = gTTS(text=mesg['content'], lang=AUDIO_SPEECH[mesg_1['language']])  
+            tts = gTTS(text=mesg['content'], lang=AUDIO_SPEECH[mesg_1['language']])
             sound_file = BytesIO()
             tts.write_to_fp(sound_file)
             st.audio(sound_file)

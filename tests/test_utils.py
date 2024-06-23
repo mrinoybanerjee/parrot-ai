@@ -1,5 +1,7 @@
-import pytest
+"""Tests for the utility functions."""
+
 from unittest.mock import Mock, patch
+import pytest
 from src.utils import initialize_session_state, show_messages
 
 @pytest.fixture
@@ -28,7 +30,15 @@ def mock_gtts():
         yield mock
 
 def test_initialize_session_state(mock_st):
-    """Test the initialize_session_state function."""
+    """
+    Test the initialize_session_state function.
+    
+    Args:
+        mock_st (Mock): The mocked Streamlit session state.
+    
+    Returns:
+        None
+    """
     initialize_session_state()
     assert "bot1_mesg" in mock_st.session_state
     assert "bot2_mesg" in mock_st.session_state
@@ -38,7 +48,18 @@ def test_initialize_session_state(mock_st):
     assert "message_counter" in mock_st.session_state
 
 def test_show_messages(mock_message, mock_time, mock_gtts, mock_st):
-    """Test the show_messages function."""
+    """
+    Test the show_messages function.
+    
+    Args:
+        mock_message (Mock): The mocked Streamlit message function.
+        mock_time (Mock): The mocked time.sleep function.
+        mock_gtts (Mock): The mocked gTTS class.
+        mock_st (Mock): The mocked Streamlit session state.
+    
+    Returns:
+        None
+    """
     mesg_1 = {
         "role": "Customer",
         "content": "Hello",
@@ -61,7 +82,18 @@ def test_show_messages(mock_message, mock_time, mock_gtts, mock_st):
     mock_st.audio.assert_called()
 
 def test_show_messages_batch(mock_message, mock_time, mock_gtts, mock_st):
-    """Test the show_messages function with batch mode enabled."""
+    """
+    Test the show_messages function with batch mode enabled.
+    
+    Args:
+        mock_message (Mock): The mocked Streamlit message function.
+        mock_time (Mock): The mocked time.sleep function.
+        mock_gtts (Mock): The mocked gTTS class.
+        mock_st (Mock): The mocked Streamlit session state.
+    
+    Returns:
+        None
+    """
     mesg_1 = {
         "role": "Customer",
         "content": "Hello",

@@ -1,5 +1,7 @@
-import pytest
+"""Tests for the conversation module."""
+
 from unittest.mock import Mock, patch
+import pytest
 from src.conversation import setup_conversation
 
 @pytest.fixture
@@ -22,7 +24,17 @@ def mock_show_messages():
         yield mock
 
 def test_setup_conversation_initial(mock_st, mock_dual_chatbot, mock_show_messages):
-    """Test the setup_conversation function when the conversation is initialized for the first time."""
+    """
+    Test the setup_conversation function when the conversation is initialized for the first time.
+    
+    Args:
+        mock_st (Mock): The mocked Streamlit session state.
+        mock_dual_chatbot (Mock): The mocked DualChatbot class.
+        mock_show_messages (Mock): The mocked show_messages function.
+        
+    Returns:
+        None
+    """
     mock_st.session_state = {}
     mock_st.sidebar.button.return_value = True  # Simulate 'Generate' button click
     
@@ -48,7 +60,17 @@ def test_setup_conversation_initial(mock_st, mock_dual_chatbot, mock_show_messag
     conversation_container.write.assert_called()
 
 def test_setup_conversation_existing(mock_st, mock_dual_chatbot, mock_show_messages):
-    """Test the setup_conversation function when the conversation is already initialized."""
+    """
+    Test the setup_conversation function when the conversation is already initialized.
+    
+    Args:
+        mock_st (Mock): The mocked Streamlit session state.
+        mock_dual_chatbot (Mock): The mocked DualChatbot class.
+        mock_show_messages (Mock): The mocked show_messages function.
+    
+    Returns:
+        None
+    """
     mock_st.session_state = {
         'dual_chatbots': Mock(),
         'bot1_mesg': [],

@@ -1,21 +1,27 @@
-import streamlit as st
+"""Main application file for Parrot-AI."""
 import os
-import requests
-import json
 from datetime import datetime
+import json
+import requests
+import streamlit as st
 from src.conversation import setup_conversation
 from src.utils import initialize_session_state
+
 
 LLM_SERVER = os.environ.get('LLM_SERVER', 'http://localhost:8080')
 
 def check_llm_server():
-    """Check if the LLM server is running."""
+    """
+    Check if the LLM server is running.
+
+    Returns:
+        bool: True if the LLM server is running, False otherwise.
+    """
     try:
         response = requests.get(f"{LLM_SERVER}/v1/models", timeout=5)
         return response.status_code == 200
     except requests.RequestException:
         return False
-    
 st.set_page_config(page_title="Parrot-AI", page_icon="🦜")
 
 # Set the title of the app
@@ -28,6 +34,7 @@ This app generates conversation or debate scripts to aid in language learning �
 Choose your desired settings and press 'Generate' to start 🚀
 """)
 
+# Check if the LLM server is running
 if not check_llm_server():
     st.error("LLM server is not running. Please start the LLM server before using Parrot-AI.")
     st.info("Run the following command in your terminal to start the LLM server:")
@@ -48,7 +55,7 @@ if learning_mode == 'Conversation':
     role2 = st.sidebar.text_input('Role 2 🎭', 'Waitstaff')
     action2 = st.sidebar.text_input('Action 2 🗣️', 'taking the order')
     scenario = st.sidebar.text_input('Scenario 🎥', 'at a restaurant')
-    time_delay = 2
+    TIME_DELAY = 2
 
     # Configure role dictionary
     role_dict = {
@@ -64,7 +71,7 @@ else:
         'role1': {'name': 'Proponent'},
         'role2': {'name': 'Opponent'}
     }
-    time_delay = 5
+    TIME_DELAY = 5
 
 language = st.sidebar.selectbox('Target Language 🔤', LANGUAGES)
 session_length = st.sidebar.selectbox('Session Length ⏰', SESSION_LENGTHS)
@@ -80,4 +87,4 @@ translate_col, original_col, audio_col = st.columns(3)
 conversation_container = st.container()
 
 setup_conversation(conversation_container, translate_col, original_col, audio_col, learning_mode,
-                   role_dict, language, scenario, proficiency_level, session_length, time_delay)
+                   role_dict, language, scenario, proficiency_level, session_length, TIME_DELAY)

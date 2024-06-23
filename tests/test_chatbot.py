@@ -1,5 +1,7 @@
-import pytest
+"""Tests for the chatbot module."""
+
 from unittest.mock import Mock, patch
+import pytest
 from src.chatbot import Chatbot, DualChatbot
 
 @pytest.fixture
@@ -9,13 +11,26 @@ def mock_openai():
         yield mock
 
 def test_chatbot_initialization(mock_openai):
-    """Test the initialization of the Chatbot class."""
+    """
+    Test the initialization of the Chatbot class.
+
+    Args:
+        mock_openai (Mock): The mocked OpenAI API client.
+        
+    Returns:
+        None
+    """
     chatbot = Chatbot("OpenAI")
     assert chatbot.client is not None
     mock_openai.assert_called_once()
 
 def test_chatbot_instruct():
-    """Test the instruct method of the Chatbot class."""
+    """
+    Test the instruct method of the Chatbot class.
+    
+    Returns:
+        None
+    """
     chatbot = Chatbot("OpenAI")
     chatbot.instruct(
         role={"name": "Customer", "action": "ordering food"},
@@ -32,7 +47,15 @@ def test_chatbot_instruct():
     assert chatbot.prompt is not None
 
 def test_chatbot_generate_response(mock_openai):
-    """Test the generate_response method of the Chatbot class."""
+    """
+    Test the generate_response method of the Chatbot class.
+    
+    Args:
+        mock_openai (Mock): The mocked OpenAI API client.
+        
+    Returns:
+        None
+    """
     chatbot = Chatbot("OpenAI")
     chatbot.instruct(
         role={"name": "Customer", "action": "ordering food"},
@@ -53,7 +76,12 @@ def test_chatbot_generate_response(mock_openai):
     mock_openai.return_value.chat.completions.create.assert_called_once()
 
 def test_chatbot_step():
-    """Test the step method of the Chatbot class."""
+    """
+    Test the step method of the Chatbot class.
+    
+    Returns:
+        None
+    """
     chatbot = Chatbot("OpenAI")
     chatbot.instruct(
         role={"name": "Customer", "action": "ordering food"},
@@ -73,7 +101,12 @@ def test_chatbot_step():
     assert translate == "Translation"
 
 def test_dual_chatbot_initialization():
-    """Test the initialization of the DualChatbot class."""
+    """
+    Test the initialization of the DualChatbot class.
+    
+    Returns:
+        None
+    """
     role_dict = {
         "role1": {"name": "Customer", "action": "ordering food"},
         "role2": {"name": "Waitstaff", "action": "taking the order"}
@@ -92,7 +125,12 @@ def test_dual_chatbot_initialization():
     assert dual_chatbot.language == "English"
 
 def test_dual_chatbot_step():
-    """Test the step method of the DualChatbot class."""
+    """
+    Test the step method of the DualChatbot class.
+    
+    Returns:
+        None
+    """
     role_dict = {
         "role1": {"name": "Customer", "action": "ordering food"},
         "role2": {"name": "Waitstaff", "action": "taking the order"}

@@ -1,3 +1,5 @@
+"""This module is used to add the project root to the Python path."""
+
 import sys
 import os
 

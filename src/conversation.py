@@ -1,18 +1,37 @@
+"""This module contains the setup_conversation function 
+that sets up the conversation or debate based on the learning mode."""
+
+import time
 import streamlit as st
 from src.chatbot import DualChatbot
 from src.utils import show_messages
-import time
+
 
 MAX_EXCHANGE_COUNTS = {
-    'Short': {'Conversation': 8, 'Debate': 4},
-    'Long': {'Conversation': 16, 'Debate': 8}
+    'Short': {'Conversation': 4, 'Debate': 4},
+    'Long': {'Conversation': 10, 'Debate': 8}
 }
 AVATAR_SEED = [123, 42]
-engine = 'OpenAI'
+ENGINE = 'OpenAI'
 
 def setup_conversation(conversation_container, translate_col, original_col, audio_col, learning_mode,
                        role_dict, language, scenario, proficiency_level, session_length, time_delay):
-    """Set up the conversation or debate based on the learning mode."""
+    """
+    Set up the conversation or debate based on the learning mode.
+    
+    Args:
+        conversation_container: The container to display the conversation or debate.
+        translate_col: The column to display the 'Translate to English' button.
+        original_col: The column to display the 'Show original' button.
+        audio_col: The column to display the 'Play audio' button.
+        learning_mode (str): The learning mode selected by the user.
+        role_dict (dict): The dictionary containing the roles and actions.
+        language (str): The target language for the conversation or debate.
+        scenario (str): The scenario or debate topic.
+        proficiency_level (str): The proficiency level of the user.
+        session_length (str): The session length selected by the user.
+        time_delay (int): The time delay between messages.
+    """
     if 'dual_chatbots' not in st.session_state:
         generate_button = st.sidebar.button('Generate')
         if generate_button:
@@ -28,7 +47,7 @@ def setup_conversation(conversation_container, translate_col, original_col, audi
                 else:
                     conversation_container.write(f"""#### Debate 💬: {scenario}""")
 
-                dual_chatbots = DualChatbot(engine, role_dict, language, scenario,
+                dual_chatbots = DualChatbot(ENGINE, role_dict, language, scenario,
                                             proficiency_level, learning_mode, session_length)
                 st.session_state['dual_chatbots'] = dual_chatbots
 
@@ -82,7 +101,7 @@ def setup_conversation(conversation_container, translate_col, original_col, audi
                     st.write(f"""#### Debate 💬: {scenario}""")
                 
                 for mesg_1, mesg_2 in zip(mesg1_list, mesg2_list):
-                    new_count = show_messages(mesg_1, mesg_2, 
+                    new_count = show_messages(mesg_1, mesg_2,
                                               st.session_state["message_counter"],
                                               time_delay=time_delay,
                                               batch=st.session_state['batch_flag'],
