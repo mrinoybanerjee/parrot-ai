@@ -13,20 +13,24 @@ engine = 'OpenAI'
 def setup_conversation(conversation_container, translate_col, original_col, audio_col, learning_mode,
                        role_dict, language, scenario, proficiency_level, session_length, time_delay):
     if 'dual_chatbots' not in st.session_state:
-        if st.sidebar.button('Generate'):
+        generate_button = st.sidebar.button('Generate')
+        if generate_button:
             st.session_state["first_time_exec"] = True
+            st.session_state['bot1_mesg'] = []
+            st.session_state['bot2_mesg'] = []
+            st.session_state['message_counter'] = 0
 
             with conversation_container:
                 if learning_mode == 'Conversation':
-                    st.write(f"""#### The following conversation happens between 
-                                    {role_dict['role1']['name']} and {role_dict['role2']['name']} {scenario} 🎭""")
+                    conversation_container.write(f"""#### The following conversation happens between 
+                                {role_dict['role1']['name']} and {role_dict['role2']['name']} {scenario} 🎭""")
                 else:
-                    st.write(f"""#### Debate 💬: {scenario}""")
+                    conversation_container.write(f"""#### Debate 💬: {scenario}""")
 
-                dual_chatbots = DualChatbot(engine, role_dict, language, scenario, 
+                dual_chatbots = DualChatbot(engine, role_dict, language, scenario,
                                             proficiency_level, learning_mode, session_length)
                 st.session_state['dual_chatbots'] = dual_chatbots
-                
+
                 for _ in range(MAX_EXCHANGE_COUNTS[session_length][learning_mode]):
                     output1, output2, translate1, translate2 = dual_chatbots.step()
 
@@ -36,16 +40,14 @@ def setup_conversation(conversation_container, translate_col, original_col, audi
                             "content": output2, "translation": translate2, "language": language}
                     
                     new_count = show_messages(mesg_1, mesg_2, 
-                                              st.session_state["message_counter"],
-                                              time_delay=time_delay, batch=False,
-                                              audio=False, translation=False)
+                                            st.session_state["message_counter"],
+                                            time_delay=time_delay, batch=False,
+                                            audio=False, translation=False)
                     st.session_state["message_counter"] = new_count
 
                     st.session_state.bot1_mesg.append(mesg_1)
                     st.session_state.bot2_mesg.append(mesg_2)
                     
-                    # Add sleep to avoid hitting the rate limit
-                    time.sleep(1)
 
     if 'dual_chatbots' in st.session_state:
         if translate_col.button('Translate to English'):
@@ -60,8 +62,13 @@ def setup_conversation(conversation_container, translate_col, original_col, audi
             st.session_state['audio_flag'] = True
             st.session_state['batch_flag'] = True
 
-        mesg1_list = st.session_state.bot1_mesg
-        mesg2_list = st.session_state.bot2_mesg
+        if 'bot1_mesg' not in st.session_state:
+            st.session_state['bot1_mesg'] = []
+        if 'bot2_mesg' not in st.session_state:
+            st.session_state['bot2_mesg'] = []
+
+        mesg1_list = st.session_state['bot1_mesg']
+        mesg2_list = st.session_state['bot2_mesg']
         dual_chatbots = st.session_state['dual_chatbots']
 
         if st.session_state["first_time_exec"]:

@@ -6,6 +6,7 @@ from io import BytesIO
 
 # Load environment variables
 load_dotenv()
+LLM_SERVER = os.environ.get('LLM_SERVER', 'http://localhost:8080')
 
 AUDIO_SPEECH = {
     'English': 'en',
@@ -23,7 +24,7 @@ class Chatbot:
         # Instantiate llm
         if engine == "OpenAI":
             self.client = OpenAI(
-                base_url="http://localhost:8080/v1",  # "http://<Your api-server IP>:port"
+                base_url=f"{LLM_SERVER}/v1",
                 api_key="sk-no-key-required"
             )
         else:
@@ -46,11 +47,12 @@ class Chatbot:
         self.starter = starter
         self.prompt = self._specify_system_message()
 
+
     def _specify_system_message(self):
         """Specify the behavior of the chatbot."""
         exchange_counts_dict = {
-            'Short': {'Conversation': 8, 'Debate': 4},
-            'Long': {'Conversation': 16, 'Debate': 8}
+            'Short': {'Conversation': 4, 'Debate': 4},
+            'Long': {'Conversation': 8, 'Debate': 8}
         }
         exchange_counts = exchange_counts_dict[self.session_length][self.learning_mode]
 
@@ -62,12 +64,11 @@ class Chatbot:
 
         # Define language requirements based on proficiency level
         if self.proficiency_level == 'Beginner':
-            lang_requirement = """use as basic and simple vocabulary and
-            sentence structures as possible. Must avoid idioms, slang,
-            and complex grammatical constructs."""
+            lang_requirement = """use basic and simple vocabulary and
+            sentence structures. Avoid idioms, slang, and complex grammatical constructs."""
         elif self.proficiency_level == 'Intermediate':
-            lang_requirement = """use a wider range of vocabulary and a variety of sentence structures. 
-            You can include some idioms and colloquial expressions,
+            lang_requirement = """use a moderate range of vocabulary and varied sentence structures. 
+            You can include some common idioms and colloquial expressions,
             but avoid highly technical language or complex literary expressions."""
         elif self.proficiency_level == 'Advanced':
             lang_requirement = """use sophisticated vocabulary, complex sentence structures, idioms,
@@ -77,45 +78,57 @@ class Chatbot:
 
         # Define the prompt for Conversation mode
         if self.learning_mode == 'Conversation':
-            prompt = f"""You are an AI that is good at role-playing.
-            You are simulating a typical conversation happened {self.scenario}.
-            In this scenario, you are playing as a {self.role['name']} {self.role['action']}, speaking to a
-            {self.oppo_role['name']} {self.oppo_role['action']}.
-            Your conversation should only be conducted in {self.language}. Do not translate.
-            This simulated {self.learning_mode} is designed for {self.language} language learners to learn real-life
-            conversations in {self.language}. You should assume the learners' proficiency level in
-            {self.language} is {self.proficiency_level}. Therefore, you should {lang_requirement}.
-            You should finish the conversation within {exchange_counts} exchanges with the {self.oppo_role['name']}.
-            Make your conversation with {self.oppo_role['name']} natural and typical in the considered scenario in
-            {self.language} cultural."""
+            prompt = f"""You are an AI assistant participating in a role-playing conversation.
+            Your role: {self.role['name']} {self.role['action']}
+            Your conversation partner's role: {self.oppo_role['name']} {self.oppo_role['action']}
+            Scenario: {self.scenario}
+
+            Important instructions:
+            1. Respond ONLY as your character ({self.role['name']}).
+            2. Generate ONLY ONE response at a time.
+            3. Do NOT generate responses for your conversation partner.
+            4. Keep your responses concise and relevant to the ongoing conversation.
+            5. Use ONLY {self.language}. Do not translate or use any other language.
+            6. {lang_requirement}
+            7. Ensure your responses are natural and typical for this scenario in {self.language}-speaking cultures.
+            8. The entire conversation should not exceed {exchange_counts} exchanges.
+
+            Remember: You are helping language learners practice {self.language} at a {self.proficiency_level} level.
+            Wait for your conversation partner's input before responding."""
 
         # Define the prompt for Debate mode
         elif self.learning_mode == 'Debate':
-            prompt = f"""You are an AI that is good at debating.
-            You are now engaged in a debate with the following topic: {self.scenario}.
-            In this debate, you are taking on the role of a {self.role['name']}.
-            Always remember your stances in the debate.
-            Your debate should only be conducted in {self.language}. Do not translate.
-            This simulated debate is designed for {self.language} language learners to
-            learn {self.language}. You should assume the learners' proficiency level in {self.language}
-            is {self.proficiency_level}. Therefore, you should {lang_requirement}.
-            You will exchange opinions with another AI (who plays the {self.oppo_role['name']} role)
-            {exchange_counts} times.
-            Everytime you speak, you can only speak no more than
-            {argument_num_dict[self.proficiency_level]} sentences."""
+            prompt = f"""You are an AI assistant participating in a debate.
+            Your role: {self.role['name']}
+            Debate topic: {self.scenario}
+
+            Important instructions:
+            1. Argue ONLY from your perspective as {self.role['name']}.
+            2. Generate ONLY ONE response at a time.
+            3. Do NOT generate arguments for your opponent.
+            4. Keep your responses focused and relevant to the debate topic.
+            5. Use ONLY {self.language}. Do not translate or use any other language.
+            6. {lang_requirement}
+            7. Limit each of your responses to no more than {argument_num_dict[self.proficiency_level]} sentences.
+            8. The entire debate should not exceed {exchange_counts} exchanges.
+
+            Remember: You are helping language learners practice {self.language} at a {self.proficiency_level} level.
+            Wait for your opponent's argument before responding."""
 
         else:
             raise KeyError('Currently unsupported learning mode!')
 
         if self.starter:
-            prompt += f"You are leading the {self.learning_mode}. \n"
+            prompt += "\nYou are starting the conversation. Make an appropriate opening statement or question."
         else:
-            prompt += f"Wait for the {self.oppo_role['name']}'s statement."
+            prompt += f"\nWait for the {self.oppo_role['name']}'s statement before responding."
 
         return prompt
 
     def generate_response(self, input_text):
         """Generate a response from the model based on the input text."""
+        if self.prompt is None:
+            raise ValueError("Chatbot has not been instructed. Call instruct() before generate_response().")
         messages = [
             {"role": "system", "content": self.prompt},
         ]
@@ -127,8 +140,7 @@ class Chatbot:
             context_tokens += len(mem['text'].split())
             if context_tokens > max_tokens:
                 break
-            messages.append({"role": "user", "content": mem['text']})
-            messages.append({"role": "assistant", "content": mem['response']})
+            messages.append({"role": "user" if mem['role'] != self.role['name'] else "assistant", "content": mem['text']})
 
         messages.append({"role": "user", "content": input_text})
 
@@ -136,23 +148,15 @@ class Chatbot:
             model="LLaMA_CPP",
             messages=messages
         )
-
-        return response.choices[0].message.content
+        # Remove </s> from the response
+        return response.choices[0].message.content.replace("</s>", "").strip()
 
     def step(self, input_text):
-        """Make one exchange round between two chatbots."""
-        # Generate response from role1
-        response1 = self.generate_response(input_text)
-        self.memory.append({"role": self.role['name'], "text": input_text, "response": response1})
-
-        # Generate response from role2 based on role1's response
-        response2 = self.generate_response(response1)
-        self.memory.append({"role": self.oppo_role['name'], "text": response1, "response": response2})
-
-        translate1 = self.translate(response1)
-        translate2 = self.translate(response2)
-
-        return response1, response2, translate1, translate2
+        """Generate a single response."""
+        response = self.generate_response(input_text)
+        self.memory.append({"role": self.role['name'], "text": response})
+        translate = self.translate(response)
+        return response, translate
 
     def translate(self, message):
         """Translate the generated script into English."""
@@ -205,20 +209,16 @@ class DualChatbot:
         self.session_length = session_length
         self._reset_conversation_history()
 
+
     def step(self):
         """Make one exchange round between two chatbots."""
-        response1 = self.chatbots['role1']['chatbot'].generate_response(self.input1)
+        response1, translate1 = self.chatbots['role1']['chatbot'].step(self.input1)
         self.conversation_history.append({"bot": self.chatbots['role1']['name'], "text": response1})
 
-        self.input2 = response1
-
-        response2 = self.chatbots['role2']['chatbot'].generate_response(self.input2)
+        response2, translate2 = self.chatbots['role2']['chatbot'].step(response1)
         self.conversation_history.append({"bot": self.chatbots['role2']['name'], "text": response2})
 
         self.input1 = response2
-
-        translate1 = self.chatbots['role1']['chatbot'].translate(response1)
-        translate2 = self.chatbots['role2']['chatbot'].translate(response2)
 
         return response1, response2, translate1, translate2
 

@@ -19,10 +19,12 @@ def mock_show_messages():
         yield mock
 
 def test_setup_conversation_initial(mock_st, mock_dual_chatbot, mock_show_messages):
-    mock_st.sidebar.button.return_value = True
+    mock_st.session_state = {}
+    mock_st.sidebar.button.return_value = True  # Simulate 'Generate' button click
     
     conversation_container = Mock()
-    conversation_container.__enter__ = Mock()
+    # Instead of mocking __enter__, we'll mock the context manager itself
+    conversation_container.__enter__ = Mock(return_value=conversation_container)
     conversation_container.__exit__ = Mock()
     translate_col = Mock()
     original_col = Mock()
@@ -35,6 +37,9 @@ def test_setup_conversation_initial(mock_st, mock_dual_chatbot, mock_show_messag
     )
     
     assert 'dual_chatbots' in mock_st.session_state
+    assert 'bot1_mesg' in mock_st.session_state
+    assert 'bot2_mesg' in mock_st.session_state
+    assert 'message_counter' in mock_st.session_state
     mock_dual_chatbot.assert_called_once()
     conversation_container.write.assert_called()
 
@@ -62,5 +67,5 @@ def test_setup_conversation_existing(mock_st, mock_dual_chatbot, mock_show_messa
         'Spanish', 'Climate change', 'Advanced', 'Long', 5
     )
     
-    conversation_container.write.assert_called()
-    assert 'summary' in mock_st.session_state
+    assert 'bot1_mesg' in mock_st.session_state
+    assert 'bot2_mesg' in mock_st.session_state

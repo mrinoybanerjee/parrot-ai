@@ -1,6 +1,22 @@
 import streamlit as st
-from src.conversation import setup_conversation, show_messages
+import os
+import requests
+import json
+from datetime import datetime
+from src.conversation import setup_conversation
 from src.utils import initialize_session_state
+
+LLM_SERVER = os.environ.get('LLM_SERVER', 'http://localhost:8080')
+
+def check_llm_server():
+    """Check if the LLM server is running."""
+    try:
+        response = requests.get(f"{LLM_SERVER}/v1/models", timeout=5)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+    
+st.set_page_config(page_title="Parrot-AI", page_icon="🦜")
 
 # Set the title of the app
 st.title('Parrot-AI 🦜🌍')
@@ -11,6 +27,12 @@ This app generates conversation or debate scripts to aid in language learning �
 
 Choose your desired settings and press 'Generate' to start 🚀
 """)
+
+if not check_llm_server():
+    st.error("LLM server is not running. Please start the LLM server before using Parrot-AI.")
+    st.info("Run the following command in your terminal to start the LLM server:")
+    st.code("./mistral-7b-instruct-v0.2.Q4_0.llamafile --server --host 0.0.0.0 --port 8080")
+    st.stop()
 
 # Define the language learning settings
 LANGUAGES = ['English', 'Hindi', 'German', 'Spanish', 'French']
