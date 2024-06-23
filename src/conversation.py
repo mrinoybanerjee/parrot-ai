@@ -12,6 +12,7 @@ engine = 'OpenAI'
 
 def setup_conversation(conversation_container, translate_col, original_col, audio_col, learning_mode,
                        role_dict, language, scenario, proficiency_level, session_length, time_delay):
+    """Set up the conversation or debate based on the learning mode."""
     if 'dual_chatbots' not in st.session_state:
         generate_button = st.sidebar.button('Generate')
         if generate_button:

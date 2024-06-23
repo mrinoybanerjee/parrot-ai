@@ -4,15 +4,18 @@ from src.chatbot import Chatbot, DualChatbot
 
 @pytest.fixture
 def mock_openai():
+    """Mock the OpenAI API client."""
     with patch('src.chatbot.OpenAI') as mock:
         yield mock
 
 def test_chatbot_initialization(mock_openai):
+    """Test the initialization of the Chatbot class."""
     chatbot = Chatbot("OpenAI")
     assert chatbot.client is not None
     mock_openai.assert_called_once()
 
 def test_chatbot_instruct():
+    """Test the instruct method of the Chatbot class."""
     chatbot = Chatbot("OpenAI")
     chatbot.instruct(
         role={"name": "Customer", "action": "ordering food"},
@@ -29,6 +32,7 @@ def test_chatbot_instruct():
     assert chatbot.prompt is not None
 
 def test_chatbot_generate_response(mock_openai):
+    """Test the generate_response method of the Chatbot class."""
     chatbot = Chatbot("OpenAI")
     chatbot.instruct(
         role={"name": "Customer", "action": "ordering food"},
@@ -49,6 +53,7 @@ def test_chatbot_generate_response(mock_openai):
     mock_openai.return_value.chat.completions.create.assert_called_once()
 
 def test_chatbot_step():
+    """Test the step method of the Chatbot class."""
     chatbot = Chatbot("OpenAI")
     chatbot.instruct(
         role={"name": "Customer", "action": "ordering food"},
@@ -68,6 +73,7 @@ def test_chatbot_step():
     assert translate == "Translation"
 
 def test_dual_chatbot_initialization():
+    """Test the initialization of the DualChatbot class."""
     role_dict = {
         "role1": {"name": "Customer", "action": "ordering food"},
         "role2": {"name": "Waitstaff", "action": "taking the order"}
@@ -86,6 +92,7 @@ def test_dual_chatbot_initialization():
     assert dual_chatbot.language == "English"
 
 def test_dual_chatbot_step():
+    """Test the step method of the DualChatbot class."""
     role_dict = {
         "role1": {"name": "Customer", "action": "ordering food"},
         "role2": {"name": "Waitstaff", "action": "taking the order"}

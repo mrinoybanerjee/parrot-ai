@@ -4,21 +4,25 @@ from src.conversation import setup_conversation
 
 @pytest.fixture
 def mock_st():
+    """Mock the Streamlit session state."""
     with patch('src.conversation.st') as mock:
         mock.session_state = {}
         yield mock
 
 @pytest.fixture
 def mock_dual_chatbot():
+    """Mock the DualChatbot class."""
     with patch('src.conversation.DualChatbot') as mock:
         yield mock
 
 @pytest.fixture
 def mock_show_messages():
+    """Mock the show_messages function."""
     with patch('src.conversation.show_messages') as mock:
         yield mock
 
 def test_setup_conversation_initial(mock_st, mock_dual_chatbot, mock_show_messages):
+    """Test the setup_conversation function when the conversation is initialized for the first time."""
     mock_st.session_state = {}
     mock_st.sidebar.button.return_value = True  # Simulate 'Generate' button click
     
@@ -44,6 +48,7 @@ def test_setup_conversation_initial(mock_st, mock_dual_chatbot, mock_show_messag
     conversation_container.write.assert_called()
 
 def test_setup_conversation_existing(mock_st, mock_dual_chatbot, mock_show_messages):
+    """Test the setup_conversation function when the conversation is already initialized."""
     mock_st.session_state = {
         'dual_chatbots': Mock(),
         'bot1_mesg': [],
