@@ -17,13 +17,6 @@ jobs:
       run: |
         docker-compose build test
         docker-compose run test
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: true
 
   build-backend:
     needs: test
@@ -46,7 +39,6 @@ jobs:
         if [[ $backend_size == *G* ]]; then
           echo "Warning: Backend image size is in GB, which may include the LLM"
           exit 1
-        fi
 
   build-frontend:
     needs: test
@@ -69,14 +61,13 @@ jobs:
         if [[ $frontend_size == *G* ]]; then
           echo "Warning: Frontend image size is in GB, which may be too large"
           exit 1
-        fi
 
-  deploy:
-    needs: [build-backend, build-frontend]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    steps:
-    - name: Deploy to production
-      run: |
-        echo "Deploying to production..."
-        # Add your deployment steps here
+  # deploy:
+  #   needs: [build-backend, build-frontend]
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  #   steps:
+  #   - name: Deploy to production
+  #     run: |
+  #       echo "Deploying to production..."
+  #       # Add your deployment steps here
