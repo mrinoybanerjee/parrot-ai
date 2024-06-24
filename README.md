@@ -1,18 +1,18 @@
 # Parrot-AI🦜🌍: AI-Powered Language Learning Conversation Generator
 
 ![Build Status](https://github.com/mrinoybanerjee/parrot-ai/actions/workflows/ci-cd.yml/badge.svg)
-![Coverage](https://img.shields.io/badge/coverage-85%25-brightgreen)
+[![codecov](https://codecov.io/gh/mrinoybanerjee/parrot-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/mrinoybanerjee/parrot-ai)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-Parrot-AI is a Streamlit-based application that leverages local Large Language Models to generate conversation or debate scripts for language learning. It offers a personalized and interactive experience without relying on external APIs.
+Parrot-AI is an AI-powered language learning tool that generates conversation and debate scripts. It uses a Streamlit frontend, a FastAPI backend, and leverages local Large Language Models to offer a personalized and interactive learning experience without relying on external APIs.
 
 ## 🎯 Project Purpose
 
-The main purpose of Parrot-AI is to provide language learners with an AI-powered tool to practice conversations and debates in their target language. By leveraging local Large Language Models, it offers a personalized and interactive learning experience without relying on external APIs.
+Parrot-AI aims to provide language learners with an immersive tool to practice conversations and debates in their target language. By utilizing local Large Language Models, it offers a customized and interactive learning experience that adapts to the user's proficiency level and learning preferences.
 
 ## 💡 Motivation
 
-Through my travels, I realized the importance of language to establish deep connections with locals. However, apps like Duolingo haven't been fitting my learning style. I learn best when I can immerse myself into conversations and pick up ideas. Parrot-AI was born out of this need for a more immersive and conversational approach to language learning.
+The idea for Parrot-AI was born from personal travel experiences, which highlighted the importance of language in forming deep connections with locals. Traditional language learning apps weren't providing the immersive experience needed for effective learning. Parrot-AI fills this gap by offering a more conversational and context-rich approach to language learning.
 
 ## 🌟 Features
 
@@ -21,80 +21,91 @@ Through my travels, I realized the importance of language to establish deep conn
 - 📊 Adjustable proficiency levels and session lengths
 - 🔊 Text-to-speech functionality
 - 🔄 Translation support
+- 🖥️ Local LLM integration for privacy and customization
 
-## 🌴 Repo Tree
+## 🌴 Project Structure
 
 ```
-.
-├── .dockerignore
-├── .github
-│   └── workflows
+parrot-ai/
+│
+├── backend/
+│   ├── Dockerfile
+│   ├── app.py
+│   ├── requirements.txt
+│   └── src/
+│       ├── __init__.py
+│       ├── chatbot.py
+│       └── utils.py
+│
+├── frontend/
+│   ├── Dockerfile
+│   ├── app.py
+│   ├── requirements.txt
+│   └── src/
+│       ├── __init__.py
+│       ├── conversation.py
+│       └── utils.py
+│
+├── tests/
+|   ├── Dockerfile
+│   ├── backend/
+│   │   ├── test_chatbot.py
+│   │   └── test_utils.py
+│   └── frontend/
+│       ├── test_conversation.py
+│       └── test_utils.py
+│
+├── .github/
+│   └── workflows/
 │       └── ci-cd.yml
+│
 ├── .gitignore
-├── Dockerfile
+├── docker-compose.yml
 ├── LICENSE
 ├── README.md
-├── app.py
 ├── conftest.py
-├── pytest.ini
-├── requirements.txt
-├── src
-│   ├── __init__.py
-│   ├── chatbot.py
-│   ├── conversation.py
-│   └── utils.py
-└── tests
-    ├── test_chatbot.py
-    ├── test_conversation.py
-    └── test_utils.py
-
-5 directories, 17 files
-
+└── pytest.ini
 ```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Python 3.8+
+- Docker and Docker Compose
 - [llamafile](https://github.com/Mozilla-Ocho/llamafile) (Mistral Instruct 7B)
 
-### Installation
+### Installation and Setup
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/parrot-ai.git
+   git clone https://github.com/mrinoybanerjee/parrot-ai.git
    cd parrot-ai
    ```
 
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-   ```
-
-3. Install required packages:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Download and set up llamafile (Mistral Instruct 7B):
+2. Download and set up llamafile (Mistral Instruct 7B):
    - Download from [llamafile releases](https://github.com/Mozilla-Ocho/llamafile/releases)
    - Make it executable:
      ```bash
      chmod +x mistral-7b-instruct-v0.2.Q4_0.llamafile
      ```
 
+3. Build the Docker images:
+   ```bash
+   docker-compose build
+   ```
+
 ## 🖥️ Usage
 
 1. Start the llamafile server:
+
    ```bash
    ./mistral-7b-instruct-v0.2.Q4_0.llamafile --server --host 0.0.0.0 --port 8080
    ```
 
-2. Run the Streamlit app:
+2. Start the Parrot-AI services:
+
    ```bash
-   streamlit run app.py
+   docker-compose up
    ```
 
 3. Open your web browser and navigate to `http://localhost:8501`
@@ -111,27 +122,34 @@ Through my travels, I realized the importance of language to establish deep conn
 
 ## 🧪 Running Tests
 
-Execute the test suite with:
+To run the tests using Docker:
 
 ```bash
-python -m pytest
+docker-compose run test
 ```
 
-## 🐳 Docker Support
+This will run the test suite and generate a coverage report.
 
-Build the Docker image:
+## 🛠️ Development
 
-```bash
-docker build -t parrot-ai .
-```
+For local development without Docker:
 
-Run the container:
+1. Set up a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+   ```
 
-```bash
-docker run -p 8501:8501 --add-host=host.docker.internal:host-gateway parrot-ai
-```
+2. Install dependencies:
+   ```bash
+   pip install -r backend/requirements.txt -r frontend/requirements.txt
+   pip install pytest pytest-cov
+   ```
 
-Note: The Docker image doesn't include the LLM. Run the llamafile server separately on your host machine.
+3. Run tests:
+   ```bash
+   pytest
+   ```
 
 ## 🤝 Contributing
 
@@ -149,9 +167,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [Streamlit](https://streamlit.io/) for the awesome web app framework
-- [llamafile](https://github.com/Mozilla-Ocho/llamafile) for the local LLM support
+- [Streamlit](https://streamlit.io/) for the frontend framework
+- [FastAPI](https://fastapi.tiangolo.com/) for the backend API
+- [llamafile](https://github.com/Mozilla-Ocho/llamafile) for local LLM support
+- All contributors and supporters of the project
 
 ## 📬 Contact
 
-mrinoybanerjee@gmail.com
+Mrinoy Banerjee - mrinoybanerjee@gmail.com
