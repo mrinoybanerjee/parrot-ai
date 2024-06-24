@@ -1,0 +1,44 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - LLM_SERVER=http://host.docker.internal:8080
+    networks:
+      - parrot-ai-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      - BACKEND_SERVER=http://backend:8000
+    depends_on:
+      - backend
+    networks:
+      - parrot-ai-network
+
+  test:
+    build:
+      context: .
+      dockerfile: tests/Dockerfile
+    volumes:
+      - .:/app
+    environment:
+      - LLM_SERVER=http://host.docker.internal:8080
+      - BACKEND_SERVER=http://backend:8000
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - parrot-ai-network
+    command: pytest --cov=backend --cov=frontend --cov-report=xml
+
+networks:
+  parrot-ai-network:
+    name: parrot-ai-network

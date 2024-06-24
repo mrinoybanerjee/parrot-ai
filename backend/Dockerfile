@@ -7,8 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 8501
+EXPOSE 8000
 
-ENV LLM_SERVER=http://host.docker.internal:8080
-
-CMD ["streamlit", "run", "app.py"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

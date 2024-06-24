@@ -1,0 +1,6 @@
+streamlit
+requests
+python-dotenv
+gtts
+streamlit-chat
+requests-mock

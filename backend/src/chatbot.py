@@ -1,11 +1,12 @@
-""" Module for chatbot interaction system. """
+"""
+Module for chatbot interaction system.
+"""
 
 import os
 from io import BytesIO
 from openai import OpenAI
 from dotenv import load_dotenv
 from gtts import gTTS
-
 
 # Load environment variables
 load_dotenv()
@@ -22,22 +23,24 @@ AUDIO_SPEECH = {
 
 class Chatbot:
     """
-    Class definition for a single chatbot.
-    
+    A class to represent a chatbot using OpenAI's language model.
+
     Attributes:
         client (OpenAI): The OpenAI client for interacting with the language model.
-        memory (list): A list to store the conversation history.
+        memory (list): The conversation history.
         prompt (str): The system prompt for the chatbot.
     """
 
     def __init__(self, engine):
         """
-        Select backbone large language model.
-        
+        Initialize the Chatbot with a specific engine.
+
         Args:
-            engine (str): The language model to use.
+            engine (str): The type of engine to use for the chatbot.
+        
+        Raises:
+            KeyError: If the engine type is unsupported.
         """
-        # Instantiate llm
         if engine == "OpenAI":
             self.client = OpenAI(
                 base_url=f"{LLM_SERVER}/v1",
@@ -45,28 +48,22 @@ class Chatbot:
             )
         else:
             raise KeyError("Currently unsupported language model type!")
-        # Initialize conversation memory
         self.memory = []
         self.prompt = None
 
-    def instruct(self, role, oppo_role, language, scenario,
-                 session_length, proficiency_level,
-                 learning_mode, starter=False):
+    def instruct(self, role, oppo_role, language, scenario, session_length, proficiency_level, learning_mode, starter=False):
         """
-        Determine the context of chatbot interaction.
-        
+        Instruct the chatbot with specific conversation parameters.
+
         Args:
             role (dict): The role of the chatbot.
-            oppo_role (dict): The role of the conversation partner.
-            language (str): The language to use in the conversation.
-            scenario (str): The scenario for the conversation.
-            session_length (str): The length of the conversation session.
-            proficiency_level (str): The proficiency level of the language learners.
-            learning_mode (str): The mode of learning (Conversation or Debate).
-            starter (bool): Whether the chatbot is starting the conversation.
-            
-        Raises:
-            KeyError: If the proficiency level is not supported.
+            oppo_role (dict): The role of the opponent chatbot.
+            language (str): The language of the conversation.
+            scenario (str): The scenario of the conversation.
+            session_length (str): The length of the session ('Short' or 'Long').
+            proficiency_level (str): The proficiency level of the language learner.
+            learning_mode (str): The learning mode ('Conversation' or 'Debate').
+            starter (bool, optional): Whether the chatbot starts the conversation. Defaults to False.
         """
         self.role = role
         self.oppo_role = oppo_role
@@ -78,16 +75,15 @@ class Chatbot:
         self.starter = starter
         self.prompt = self._specify_system_message()
 
-
     def _specify_system_message(self):
         """
         Specify the system message based on the chatbot context.
-        
+
         Returns:
             str: The system message for the chatbot.
-            
+
         Raises:
-            KeyError: If the proficiency level is not supported.
+            KeyError: If the proficiency level or learning mode is unsupported.
         """
         exchange_counts_dict = {
             'Short': {'Conversation': 4, 'Debate': 4},
@@ -103,15 +99,11 @@ class Chatbot:
 
         # Define language requirements based on proficiency level
         if self.proficiency_level == 'Beginner':
-            lang_requirement = """use basic and simple vocabulary and
-            sentence structures. Avoid idioms, slang, and complex grammatical constructs."""
+            lang_requirement = "use basic and simple vocabulary and sentence structures. Avoid idioms, slang, and complex grammatical constructs."
         elif self.proficiency_level == 'Intermediate':
-            lang_requirement = """use a moderate range of vocabulary and varied sentence structures. 
-            You can include some common idioms and colloquial expressions,
-            but avoid highly technical language or complex literary expressions."""
+            lang_requirement = "use a moderate range of vocabulary and varied sentence structures. You can include some common idioms and colloquial expressions, but avoid highly technical language or complex literary expressions."
         elif self.proficiency_level == 'Advanced':
-            lang_requirement = """use sophisticated vocabulary, complex sentence structures, idioms,
-            colloquial expressions, and technical language where appropriate."""
+            lang_requirement = "use sophisticated vocabulary, complex sentence structures, idioms, colloquial expressions, and technical language where appropriate."
         else:
             raise KeyError('Currently unsupported proficiency level!')
 
@@ -165,14 +157,17 @@ class Chatbot:
         return prompt
 
     def generate_response(self, input_text):
-        """ 
-        Generate a response to the given input text.
-        
+        """
+        Generate a response based on the input text.
+
         Args:
-            input_text (str): The input text to generate a response.
-            
+            input_text (str): The input text from the user.
+
         Returns:
-            str: The generated response.
+            str: The generated response from the chatbot.
+
+        Raises:
+            ValueError: If the chatbot has not been instructed.
         """
         if self.prompt is None:
             raise ValueError("Chatbot has not been instructed. Call instruct() before generate_response().")
@@ -180,8 +175,7 @@ class Chatbot:
             {"role": "system", "content": self.prompt},
         ]
 
-        # Add only the last few messages to stay within the token limit
-        max_tokens = 4096 - 500  # Reserve tokens for response and prompt
+        max_tokens = 4096 - 500
         context_tokens = 0
         for mem in reversed(self.memory):
             context_tokens += len(mem['text'].split())
@@ -195,18 +189,17 @@ class Chatbot:
             model="LLaMA_CPP",
             messages=messages
         )
-        # Remove </s> from the response
         return response.choices[0].message.content.replace("</s>", "").strip()
 
     def step(self, input_text):
-        """ 
-        Generate a response to the given input text and update the conversation history.
-        
+        """
+        Perform a conversation step with the chatbot.
+
         Args:
-            input_text (str): The input text to generate a response.
-            
+            input_text (str): The input text from the user.
+
         Returns:
-            str: The generated response.
+            tuple: The response from the chatbot and its translation.
         """
         response = self.generate_response(input_text)
         self.memory.append({"role": self.role['name'], "text": response})
@@ -215,16 +208,13 @@ class Chatbot:
 
     def translate(self, message):
         """
-        Translate the given message to the target language.
-        
+        Translate a message from the chatbot's language to English.
+
         Args:
             message (str): The message to translate.
-        
+
         Returns:
             str: The translated message.
-        
-        Raises:
-            ValueError: If the language is not supported.
         """
         if self.language == 'English':
             translation = 'Translation: ' + message
@@ -235,16 +225,13 @@ class Chatbot:
 
     def text_to_speech(self, message):
         """
-        Convert the given text to speech.
-        
+        Convert a text message to speech.
+
         Args:
-            message (str): The text to convert to speech.
-            
+            message (str): The message to convert to speech.
+
         Returns:
-            BytesIO: The audio file in BytesIO format.
-        
-        Raises:
-            ValueError: If the language is not supported.
+            BytesIO: The audio file of the speech.
         """
         tts = gTTS(text=message, lang=AUDIO_SPEECH[self.language])
         sound_file = BytesIO()
@@ -252,46 +239,36 @@ class Chatbot:
         return sound_file
 
     def _reset_conversation_history(self):
-        """
-        Reset the conversation history.
-        
-        Raises:
-            ValueError: If the chatbot has not been instructed.
-        """
+        """Reset the conversation history."""
         self.memory = []
 
 
 class DualChatbot:
     """
-    Class definition for a dual chatbot system.
-    
+    A class to represent a dual chatbot system for role-playing conversations.
+
     Attributes:
-        engine (str): The language model to use.
-        proficiency_level (str): The proficiency level of the language learners.
-        language (str): The language to use in the conversation.
-        chatbots (dict): A dictionary of two chatbots.
-        session_length (str): The length of the conversation session.
-        conversation_history (list): A list to store the conversation history.
-        input1 (str): The input text for the first chatbot.
-        input2 (str): The input text for the second chatbot.
+        engine (str): The type of engine to use for the chatbots.
+        proficiency_level (str): The proficiency level of the language learner.
+        language (str): The language of the conversation.
+        chatbots (dict): The dictionary containing the chatbots for each role.
+        session_length (str): The length of the session ('Short' or 'Long').
+        conversation_history (list): The conversation history.
+        current_speaker (str): The current speaker ('role1' or 'role2').
     """
 
-    def __init__(self, engine, role_dict, language, scenario, proficiency_level,
-                 learning_mode, session_length):
+    def __init__(self, engine, role_dict, language, scenario, proficiency_level, learning_mode, session_length):
         """
-        Initialize the dual chatbot system.
-        
+        Initialize the DualChatbot with specific conversation parameters.
+
         Args:
-            engine (str): The language model to use.
-            role_dict (dict): A dictionary of two chatbots.
-            language (str): The language to use in the conversation.
-            scenario (str): The scenario for the conversation.
-            proficiency_level (str): The proficiency level of the language learners.
-            learning_mode (str): The mode of learning (Conversation or Debate).
-            session_length (str): The length of the conversation
-            
-        Raises:
-            KeyError: If the language model is not supported.
+            engine (str): The type of engine to use for the chatbots.
+            role_dict (dict): The dictionary containing the roles for each chatbot.
+            language (str): The language of the conversation.
+            scenario (str): The scenario of the conversation.
+            proficiency_level (str): The proficiency level of the language learner.
+            learning_mode (str): The learning mode ('Conversation' or 'Debate').
+            session_length (str): The length of the session ('Short' or 'Long').
         """
         self.engine = engine
         self.proficiency_level = proficiency_level
@@ -315,52 +292,49 @@ class DualChatbot:
                                                    learning_mode=learning_mode, starter=False)
 
         self.session_length = session_length
-        self._reset_conversation_history()
-
+        self.conversation_history = []
+        self.current_speaker = 'role1'
 
     def step(self):
         """
-        Generate a response for the dual chatbot system.
-        
+        Perform a conversation step for the dual chatbot system.
+
         Returns:
-            str: The generated response for the first chatbot.
-            str: The generated response for the second chatbot.
-            str: The translation of the response for the first chatbot.
-            str: The translation of the response for the second chatbot.
-            
-        Raises:
-            ValueError: If the chatbots have not been instructed.
+            tuple: The responses and translations from both chatbots.
         """
-        response1, translate1 = self.chatbots['role1']['chatbot'].step(self.input1)
-        self.conversation_history.append({"bot": self.chatbots['role1']['name'], "text": response1})
+        if not self.conversation_history:
+            input_text = "Start the conversation."
+        else:
+            input_text = self.conversation_history[-1]['text']
 
-        response2, translate2 = self.chatbots['role2']['chatbot'].step(response1)
-        self.conversation_history.append({"bot": self.chatbots['role2']['name'], "text": response2})
+        current_chatbot = self.chatbots[self.current_speaker]['chatbot']
+        response, translate = current_chatbot.step(input_text)
 
-        self.input1 = response2
+        self.conversation_history.append({
+            "bot": self.chatbots[self.current_speaker]['name'],
+            "text": response
+        })
 
-        return response1, response2, translate1, translate2
+        self.current_speaker = 'role2' if self.current_speaker == 'role1' else 'role1'
 
-    def _reset_conversation_history(self):
-        """
-        Reset the conversation history.
-        
-        Raises:
-            ValueError: If the chatbots have not been instructed.
-        """
-        self.conversation_history = []
-        self.input1 = "Start the conversation."
-        self.input2 = ""
+        next_chatbot = self.chatbots[self.current_speaker]['chatbot']
+        response2, translate2 = next_chatbot.step(response)
+
+        self.conversation_history.append({
+            "bot": self.chatbots[self.current_speaker]['name'],
+            "text": response2
+        })
+
+        self.current_speaker = 'role2' if self.current_speaker == 'role1' else 'role1'
+
+        return response, response2, translate, translate2
 
     def summary(self):
         """
         Generate a summary of the conversation.
-        
+
         Returns:
             str: The summary of the conversation.
-            
-        Raises:
-            ValueError: If the conversation history is empty.
         """
         script = "\n".join([f"{entry['bot']}: {entry['text']}" for entry in self.conversation_history])
         instruction = f"""The following text is a simulated conversation in
