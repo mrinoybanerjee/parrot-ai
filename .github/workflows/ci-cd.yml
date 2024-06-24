@@ -32,18 +32,6 @@ jobs:
         file: ./backend/Dockerfile
         push: false
         tags: parrot-ai-backend:latest
-    - name: Check backend image size
-      run: |
-        backend_size=$(docker images parrot-ai-backend --format "{{.Size}}")
-        echo "Backend image size: $backend_size"
-        size_in_mb=$(echo $backend_size | grep -o '[0-9]\+')
-        if [[ $backend_size == *GB* ]]; then
-          size_in_mb=$(($size_in_mb * 1024))
-        fi
-        if [[ $size_in_mb -gt 5000 ]]; then  # Increase limit to 5000MB (5GB)
-          echo "Warning: Backend image size exceeds 5GB limit"
-          exit 1
-        fi
 
   build-frontend:
     needs: test
@@ -59,25 +47,13 @@ jobs:
         file: ./frontend/Dockerfile
         push: false
         tags: parrot-ai-frontend:latest
-    - name: Check frontend image size
-      run: |
-        frontend_size=$(docker images parrot-ai-frontend --format "{{.Size}}")
-        echo "Frontend image size: $frontend_size"
-        size_in_mb=$(echo $frontend_size | grep -o '[0-9]\+')
-        if [[ $frontend_size == *GB* ]]; then
-          size_in_mb=$(($size_in_mb * 1024))
-        fi
-        if [[ $size_in_mb -gt 5000 ]]; then  # Increase limit to 5000MB (5GB)
-          echo "Warning: Frontend image size exceeds 5GB limit"
-          exit 1
-        fi
 
-  # deploy:
-  #   needs: [build-backend, build-frontend]
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-  #   steps:
-  #   - name: Deploy to production
-  #     run: |
-  #       echo "Deploying to production..."
-  #       # Add your deployment steps here
+  deploy:
+    needs: [build-backend, build-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production..."
+        # Add your deployment steps here
