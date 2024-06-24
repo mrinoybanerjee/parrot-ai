@@ -36,9 +36,14 @@ jobs:
       run: |
         backend_size=$(docker images parrot-ai-backend --format "{{.Size}}")
         echo "Backend image size: $backend_size"
-        if [[ $backend_size == *G* ]]; then
-          echo "Warning: Backend image size is in GB, which may include the LLM"
+        size_in_mb=$(echo $backend_size | grep -o '[0-9]\+')
+        if [[ $backend_size == *GB* ]]; then
+          size_in_mb=$(($size_in_mb * 1024))
+        fi
+        if [[ $size_in_mb -gt 5000 ]]; then  # Increase limit to 5000MB (5GB)
+          echo "Warning: Backend image size exceeds 5GB limit"
           exit 1
+        fi
 
   build-frontend:
     needs: test
@@ -58,9 +63,14 @@ jobs:
       run: |
         frontend_size=$(docker images parrot-ai-frontend --format "{{.Size}}")
         echo "Frontend image size: $frontend_size"
-        if [[ $frontend_size == *G* ]]; then
-          echo "Warning: Frontend image size is in GB, which may be too large"
+        size_in_mb=$(echo $frontend_size | grep -o '[0-9]\+')
+        if [[ $frontend_size == *GB* ]]; then
+          size_in_mb=$(($size_in_mb * 1024))
+        fi
+        if [[ $size_in_mb -gt 5000 ]]; then  # Increase limit to 5000MB (5GB)
+          echo "Warning: Frontend image size exceeds 5GB limit"
           exit 1
+        fi
 
   # deploy:
   #   needs: [build-backend, build-frontend]

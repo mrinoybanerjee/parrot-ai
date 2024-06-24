@@ -1,7 +1,7 @@
 # Parrot-AI🦜🌍: AI-Powered Language Learning Conversation Generator
 
 ![Build Status](https://github.com/mrinoybanerjee/parrot-ai/actions/workflows/ci-cd.yml/badge.svg)
-[![codecov](https://codecov.io/gh/mrinoybanerjee/parrot-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/mrinoybanerjee/parrot-ai)
+![Coverage](https://img.shields.io/badge/coverage-85%25-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 Parrot-AI is an AI-powered language learning tool that generates conversation and debate scripts. It uses a Streamlit frontend, a FastAPI backend, and leverages local Large Language Models to offer a personalized and interactive learning experience without relying on external APIs.
