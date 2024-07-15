@@ -110,6 +110,8 @@ parrot-ai/
 
 3. Open your web browser and navigate to `http://localhost:8501`
 
+[Application screenshot]
+
 4. Configure your session in the sidebar:
    - Choose learning mode (Conversation or Debate)
    - Select target language, proficiency level, and session length
@@ -129,6 +131,14 @@ docker-compose run test
 ```
 
 This will run the test suite and generate a coverage report.
+
+## Performance/Evaluation Results
+
+[performance/evaluation results here]
+
+## Demo Video
+
+[Link to demo video]
 
 ## 🛠️ Development
 
@@ -174,4 +184,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📬 Contact
 
-Mrinoy Banerjee - mrinoybanerjee@gmail.com
+[Mrinoy Banerjee] - [mrinoybanerjee@gmail.com]

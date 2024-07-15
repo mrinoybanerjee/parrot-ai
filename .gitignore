@@ -10,3 +10,5 @@ __pycache__/
 llama.log
 coverage.xml
 .coverage
+.DS_Store
+tests/.DS_Store
