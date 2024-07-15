@@ -23,7 +23,8 @@ jobs:
     - name: Format with black
       run: |
         black --version
-        black . --check
+        black .
+        black --check .
     - name: Run tests
       run: pytest
 
