@@ -1,8 +1,6 @@
-import pytest
 from unittest import mock
 from frontend.src.utils import show_messages, initialize_session_state
 from io import BytesIO
-import streamlit as st
 
 def test_initialize_session_state(mock_streamlit):
     """
