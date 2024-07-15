@@ -3,11 +3,11 @@ This module is used to add the project root and component roots to the Python pa
 as well as to define fixtures for mocking LLM and backend servers.
 """
 
-import requests_mock
-import pytest
 import sys
 import os
 from unittest import mock
+import requests_mock
+import pytest
 
 # Get the absolute path of the project root
 project_root = os.path.dirname(os.path.abspath(__file__))
@@ -22,15 +22,17 @@ frontend_path = os.path.join(project_root, 'frontend')
 sys.path.insert(0, backend_path)
 sys.path.insert(0, frontend_path)
 
+
 class SessionStateMock(dict):
     """
     A mock class to simulate Streamlit's session state using a dictionary.
     """
     def __getattr__(self, item):
         return self[item]
-    
+
     def __setattr__(self, key, value):
         self[key] = value
+
 
 @pytest.fixture(scope="session")
 def mock_llm_server():
@@ -47,15 +49,18 @@ def mock_llm_server():
             'choices': [{'message': {'content': 'Mocked LLM response'}}]
         })
         # Mock Google Translate API
-        m.post('https://translate.google.com/_/TranslateWebserverUi/data/batchexecute', text='')
+        m.post('https://translate.google.com/_/TranslateWebserverUi/data/batchexecute',
+               text='')
         yield m
+
 
 @pytest.fixture(scope="session")
 def mock_backend_server():
     """
     A pytest fixture to mock the backend server.
 
-    Mocks the endpoints for generating conversation, generating summary, and resetting conversation.
+    Mocks the endpoints for generating conversation, generating summary,
+      and resetting conversation.
 
     Yields:
         requests_mock.Mocker: The mocked backend server.
@@ -83,15 +88,18 @@ def mock_backend_server():
         m.post('http://backend:8000/reset_conversation', status_code=200)
         yield m
 
+
 @pytest.fixture(autouse=True)
 def mock_streamlit(monkeypatch):
     """
     A pytest fixture to mock Streamlit components and session state.
 
-    Ensures BACKEND_SERVER is set to the correct URL and mocks Streamlit components and session state.
+    Ensures BACKEND_SERVER is set to the correct URL and mocks Streamlit components
+      and session state.
 
     Args:
-        monkeypatch (pytest.MonkeyPatch): The monkeypatch object for modifying environment variables.
+        monkeypatch (pytest.MonkeyPatch): The monkeypatch object for modifying
+          environment variables.
 
     Yields:
         tuple: The mocked container, column, and session state.
@@ -104,5 +112,6 @@ def mock_streamlit(monkeypatch):
             mock_column = mock.MagicMock()
             mock_columns.return_value = [mock_column, mock_column, mock_column]
             # Use SessionStateMock for session_state
-            with mock.patch('streamlit.session_state', new_callable=SessionStateMock) as mock_session_state:
+            with mock.patch('streamlit.session_state',
+                            new_callable=SessionStateMock) as mock_session_state:
                 yield mock_container, mock_column, mock_session_state

@@ -25,6 +25,10 @@ jobs:
         black --version
         black .
         black --check .
+    - name: Lint with flake8
+      run: |
+        flake8 --version
+        flake8 .
     - name: Run tests
       run: pytest
 

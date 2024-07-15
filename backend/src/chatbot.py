@@ -27,7 +27,7 @@ class Chatbot:
     A class to represent a chatbot using OpenAI's language model.
 
     Attributes:
-        client (OpenAI): The OpenAI client for interacting with the language 
+        client (OpenAI): The OpenAI client for interacting with the language
         model.
         memory (list): The conversation history.
         prompt (str): The system prompt for the chatbot.
@@ -39,7 +39,7 @@ class Chatbot:
 
         Args:
             engine (str): The type of engine to use for the chatbot.
-        
+
         Raises:
             KeyError: If the engine type is unsupported.
         """
@@ -53,8 +53,10 @@ class Chatbot:
         self.memory = []
         self.prompt = None
 
-    def instruct(self, role, oppo_role, language, scenario, session_length, 
-                 proficiency_level, learning_mode, starter=False):
+    def instruct(
+        self, role, oppo_role, language, scenario, session_length,
+        proficiency_level, learning_mode, starter=False
+    ):
         """
         Instruct the chatbot with specific conversation parameters.
 
@@ -96,7 +98,9 @@ class Chatbot:
             'Short': {'Conversation': 4, 'Debate': 4},
             'Long': {'Conversation': 8, 'Debate': 8}
         }
-        exchange_counts = exchange_counts_dict[self.session_length][self.learning_mode]
+        exchange_counts = (
+            exchange_counts_dict[self.session_length][self.learning_mode]
+        )
 
         argument_num_dict = {
             'Beginner': 4,
@@ -106,60 +110,81 @@ class Chatbot:
 
         # Define language requirements based on proficiency level
         if self.proficiency_level == 'Beginner':
-            lang_requirement = "use basic and simple vocabulary and sentence structures. Avoid idioms, slang, and complex grammatical constructs."
+            lang_requirement = (
+                "use basic and simple vocabulary and sentence structures. "
+                "Avoid idioms, slang, and complex grammatical constructs."
+            )
         elif self.proficiency_level == 'Intermediate':
-            lang_requirement = "use a moderate range of vocabulary and varied sentence structures. You can include some common idioms and colloquial expressions, but avoid highly technical language or complex literary expressions."
+            lang_requirement = (
+                "use a moderate range of vocabulary and varied sentence "
+                "structures. You can include some common idioms and "
+                "colloquial expressions, but avoid highly technical language "
+                "or complex literary expressions."
+            )
         elif self.proficiency_level == 'Advanced':
-            lang_requirement = "use sophisticated vocabulary, complex sentence structures, idioms, colloquial expressions, and technical language where appropriate."
+            lang_requirement = (
+                "use sophisticated vocabulary, complex sentence structures, "
+                "idioms, colloquial expressions, and technical language "
+                "where appropriate."
+            )
         else:
             raise KeyError('Currently unsupported proficiency level!')
 
         # Define the prompt for Conversation mode
         if self.learning_mode == 'Conversation':
-            prompt = f"""You are an AI assistant participating in a role-playing conversation.
-            Your role: {self.role['name']} {self.role['action']}
-            Your conversation partner's role: {self.oppo_role['name']} {self.oppo_role['action']}
-            Scenario: {self.scenario}
-
-            Important instructions:
-            1. Respond ONLY as your character ({self.role['name']}).
-            2. Generate ONLY ONE response at a time.
-            3. Do NOT generate responses for your conversation partner.
-            4. Keep your responses concise and relevant to the ongoing conversation.
-            5. Use ONLY {self.language}. Do not translate or use any other language.
-            6. {lang_requirement}
-            7. Ensure your responses are natural and typical for this scenario in {self.language}-speaking cultures.
-            8. The entire conversation should not exceed {exchange_counts} exchanges.
-
-            Remember: You are helping language learners practice {self.language} at a {self.proficiency_level} level.
-            Wait for your conversation partner's input before responding."""
+            prompt = (
+                f"You are an AI assistant participating in a role-playing "
+                f"conversation.\nYour role: {self.role['name']} "
+                f"{self.role['action']}\nYour conversation partner's role: "
+                f"{self.oppo_role['name']} {self.oppo_role['action']}\n"
+                f"Scenario: {self.scenario}\n\nImportant instructions:\n"
+                f"1. Respond ONLY as your character ({self.role['name']}).\n"
+                f"2. Generate ONLY ONE response at a time.\n"
+                f"3. Do NOT generate responses for your conversation partner.\n"
+                f"4. Keep your responses concise and relevant to the ongoing "
+                f"conversation.\n5. Use ONLY {self.language}. Do not translate "
+                f"or use any other language.\n6. {lang_requirement}\n"
+                f"7. Ensure your responses are natural and typical for this "
+                f"scenario in {self.language}-speaking cultures.\n"
+                f"8. The entire conversation should not exceed "
+                f"{exchange_counts} exchanges.\n\nRemember: You are helping "
+                f"language learners practice {self.language} at a "
+                f"{self.proficiency_level} level.\nWait for your conversation "
+                f"partner's input before responding."
+            )
 
         # Define the prompt for Debate mode
         elif self.learning_mode == 'Debate':
-            prompt = f"""You are an AI assistant participating in a debate.
-            Your role: {self.role['name']}
-            Debate topic: {self.scenario}
-
-            Important instructions:
-            1. Argue ONLY from your perspective as {self.role['name']}.
-            2. Generate ONLY ONE response at a time.
-            3. Do NOT generate arguments for your opponent.
-            4. Keep your responses focused and relevant to the debate topic.
-            5. Use ONLY {self.language}. Do not translate or use any other language.
-            6. {lang_requirement}
-            7. Limit each of your responses to no more than {argument_num_dict[self.proficiency_level]} sentences.
-            8. The entire debate should not exceed {exchange_counts} exchanges.
-
-            Remember: You are helping language learners practice {self.language} at a {self.proficiency_level} level.
-            Wait for your opponent's argument before responding."""
+            prompt = (
+                f"You are an AI assistant participating in a debate.\n"
+                f"Your role: {self.role['name']}\nDebate topic: {self.scenario}"
+                f"\n\nImportant instructions:\n1. Argue ONLY from your "
+                f"perspective as {self.role['name']}.\n2. Generate ONLY ONE "
+                f"response at a time.\n3. Do NOT generate arguments for your "
+                f"opponent.\n4. Keep your responses focused and relevant to "
+                f"the debate topic.\n5. Use ONLY {self.language}. Do not "
+                f"translate or use any other language.\n6. {lang_requirement}\n"
+                f"7. Limit each of your responses to no more than "
+                f"{argument_num_dict[self.proficiency_level]} sentences.\n"
+                f"8. The entire debate should not exceed {exchange_counts} "
+                f"exchanges.\n\nRemember: You are helping language learners "
+                f"practice {self.language} at a {self.proficiency_level} level."
+                f"\nWait for your opponent's argument before responding."
+            )
 
         else:
             raise KeyError('Currently unsupported learning mode!')
 
         if self.starter:
-            prompt += "\nYou are starting the conversation. Make an appropriate opening statement or question."
+            prompt += (
+                "\nYou are starting the conversation. "
+                "Make an appropriate opening statement or question."
+            )
         else:
-            prompt += f"\nWait for the {self.oppo_role['name']}'s statement before responding."
+            prompt += (
+                f"\nWait for the {self.oppo_role['name']}'s statement "
+                "before responding."
+            )
 
         return prompt
 
@@ -177,7 +202,10 @@ class Chatbot:
             ValueError: If the chatbot has not been instructed.
         """
         if self.prompt is None:
-            raise ValueError("Chatbot has not been instructed. Call instruct() before generate_response().")
+            raise ValueError(
+                "Chatbot has not been instructed. "
+                "Call instruct() before generate_response()."
+            )
         messages = [
             {"role": "system", "content": self.prompt},
         ]
@@ -188,7 +216,10 @@ class Chatbot:
             context_tokens += len(mem['text'].split())
             if context_tokens > max_tokens:
                 break
-            messages.append({"role": "user" if mem['role'] != self.role['name'] else "assistant", "content": mem['text']})
+            messages.append({
+                "role": "user" if mem['role'] != self.role['name'] else "assistant",
+                "content": mem['text']
+            })
 
         messages.append({"role": "user", "content": input_text})
 
@@ -226,7 +257,10 @@ class Chatbot:
         if self.language == 'English':
             translation = 'Translation: ' + message
         else:
-            instruction = f"Translate the following sentence from {self.language} to English: {message}"
+            instruction = (
+                f"Translate the following sentence from {self.language} "
+                f"to English: {message}"
+            )
             translation = self.generate_response(instruction)
         return translation
 
@@ -264,18 +298,25 @@ class DualChatbot:
         current_speaker (str): The current speaker ('role1' or 'role2').
     """
 
-    def __init__(self, engine, role_dict, language, scenario, proficiency_level, learning_mode, session_length, llm_server):
+    def __init__(
+        self, engine, role_dict, language, scenario, proficiency_level,
+        learning_mode, session_length, llm_server
+    ):
         """
         Initialize the DualChatbot with specific conversation parameters.
 
         Args:
             engine (str): The type of engine to use for the chatbots.
-            role_dict (dict): The dictionary containing the roles for each chatbot.
+            role_dict (dict): The dictionary containing the roles for each
+                chatbot.
             language (str): The language of the conversation.
             scenario (str): The scenario of the conversation.
-            proficiency_level (str): The proficiency level of the language learner.
-            learning_mode (str): The learning mode ('Conversation' or 'Debate').
-            session_length (str): The length of the session ('Short' or 'Long').
+            proficiency_level (str): The proficiency level of the language
+                learner.
+            learning_mode (str): The learning mode ('Conversation' or
+                'Debate').
+            session_length (str): The length of the session ('Short' or
+                'Long').
         """
         self.engine = engine
         self.proficiency_level = proficiency_level
@@ -284,19 +325,23 @@ class DualChatbot:
         for k in role_dict.keys():
             self.chatbots[k].update({'chatbot': Chatbot(engine, llm_server)})
 
-        self.chatbots['role1']['chatbot'].instruct(role=self.chatbots['role1'],
-                                                   oppo_role=self.chatbots['role2'],
-                                                   language=language, scenario=scenario,
-                                                   session_length=session_length,
-                                                   proficiency_level=proficiency_level,
-                                                   learning_mode=learning_mode, starter=True)
+        self.chatbots['role1']['chatbot'].instruct(
+            role=self.chatbots['role1'],
+            oppo_role=self.chatbots['role2'],
+            language=language, scenario=scenario,
+            session_length=session_length,
+            proficiency_level=proficiency_level,
+            learning_mode=learning_mode, starter=True
+        )
 
-        self.chatbots['role2']['chatbot'].instruct(role=self.chatbots['role2'],
-                                                   oppo_role=self.chatbots['role1'],
-                                                   language=language, scenario=scenario,
-                                                   session_length=session_length,
-                                                   proficiency_level=proficiency_level,
-                                                   learning_mode=learning_mode, starter=False)
+        self.chatbots['role2']['chatbot'].instruct(
+            role=self.chatbots['role2'],
+            oppo_role=self.chatbots['role1'],
+            language=language, scenario=scenario,
+            session_length=session_length,
+            proficiency_level=proficiency_level,
+            learning_mode=learning_mode, starter=False
+        )
 
         self.session_length = session_length
         self.conversation_history = []
@@ -343,19 +388,25 @@ class DualChatbot:
         Returns:
             str: The summary of the conversation.
         """
-        script = "\n".join([f"{entry['bot']}: {entry['text']}" for entry in self.conversation_history])
-        instruction = f"""The following text is a simulated conversation in
-        {self.language}. The goal of this text is to aid {self.language} learners to learn
-        real-life usage of {self.language}. Therefore, your task is to summarize the key
-        learning points based on the given text. Specifically, you should summarize
-        the key vocabulary, grammar points, and function phrases that could be important
-        for students learning {self.language}. Your summary should be conducted in English, but
-        use examples from the text in the original language where appropriate.
-        Remember your target students have a proficiency level of
-        {self.proficiency_level} in {self.language}. Your summarization must match with their
-        proficiency level.
-
-        The conversation is: \n{script}"""
+        script = "\n".join(
+            f"{entry['bot']}: {entry['text']}"
+            for entry in self.conversation_history
+        )
+        instruction = (
+            f"The following text is a simulated conversation in "
+            f"{self.language}. The goal of this text is to aid "
+            f"{self.language} learners to learn real-life usage of "
+            f"{self.language}. Therefore, your task is to summarize the key "
+            f"learning points based on the given text. Specifically, you "
+            f"should summarize the key vocabulary, grammar points, and "
+            f"function phrases that could be important for students learning "
+            f"{self.language}. Your summary should be conducted in English, "
+            f"but use examples from the text in the original language where "
+            f"appropriate. Remember your target students have a proficiency "
+            f"level of {self.proficiency_level} in {self.language}. Your "
+            f"summarization must match with their proficiency level.\n\n"
+            f"The conversation is: \n{script}"
+        )
 
         summary = self.chatbots['role1']['chatbot'].generate_response(instruction)
         return summary

@@ -1,6 +1,9 @@
+""" Tests for the conversation module. """
+
 from unittest import mock
-from frontend.src.conversation import generate_conversation, setup_conversation
 import streamlit as st
+from frontend.src.conversation import generate_conversation, setup_conversation
+
 
 def test_generate_conversation(mock_backend_server):
     """
@@ -17,11 +20,11 @@ def test_generate_conversation(mock_backend_server):
         learning_mode="Conversation",
         session_length="Short"
     )
-    
     # Assert that the result is not None and contains expected responses
     assert result is not None
     assert result["response1"] == "Hello"
     assert result["response2"] == "Hi there"
+
 
 def test_setup_conversation(mock_backend_server, mock_streamlit):
     """
@@ -48,12 +51,13 @@ def test_setup_conversation(mock_backend_server, mock_streamlit):
     # Mock the sidebar button click
     with mock.patch('streamlit.sidebar.button', return_value=True):
         # Mock the generate_conversation function
-        with mock.patch('frontend.src.conversation.generate_conversation', return_value={
-            "response1": "Hello",
-            "response2": "Hi there",
-            "translate1": "Hello",
-            "translate2": "Hi there"
-        }):
+        with mock.patch('frontend.src.conversation.generate_conversation',
+                        return_value={
+                            "response1": "Hello",
+                            "response2": "Hi there",
+                            "translate1": "Hello",
+                            "translate2": "Hi there"
+                        }):
             setup_conversation(
                 conversation_container, translate_col, original_col, audio_col,
                 "Conversation",

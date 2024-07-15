@@ -1,4 +1,5 @@
-"""This module contains helper functions to initialize session state and display messages."""
+"""This module contains helper functions to initialize
+session state and display messages."""
 
 from io import BytesIO
 import time
@@ -17,6 +18,7 @@ AUDIO_SPEECH = {
 
 # Define avatar seeds for consistent avatar generation
 AVATAR_SEED = [123, 42]
+
 
 def initialize_session_state():
     """
@@ -41,13 +43,13 @@ def initialize_session_state():
     if 'message_counter' not in st.session_state:
         st.session_state["message_counter"] = 0
 
+
 def show_messages(mesg_1, mesg_2, message_counter,
                   time_delay, batch=False, audio=False,
                   translation=False):
     """
     Display conversation exchanges. This helper function supports
     displaying original texts, translated texts, and audio speech.
-    
     Args:
         mesg_1 (dict): The message dictionary for the first speaker.
         mesg_2 (dict): The message dictionary for the second speaker.
@@ -56,13 +58,12 @@ def show_messages(mesg_1, mesg_2, message_counter,
         batch (bool): Whether to show the messages in batch.
         audio (bool): Whether to show the audio speech.
         translation (bool): Whether to show the translated messages.
-        
     Returns:
         int: The updated message counter.
     """
     for i, mesg in enumerate([mesg_1, mesg_2]):
         # Show original exchange
-        message(f"{mesg['content']}", is_user=i==1, avatar_style="bottts",
+        message(f"{mesg['content']}", is_user=i == 1, avatar_style="bottts",
                 seed=AVATAR_SEED[i],
                 key=message_counter)
         message_counter += 1
@@ -73,8 +74,8 @@ def show_messages(mesg_1, mesg_2, message_counter,
 
         # Show translated exchange if translation flag is set
         if translation:
-            message(f"{mesg['translation']}", is_user=i==1, avatar_style="bottts",
-                    seed=AVATAR_SEED[i], 
+            message(f"{mesg['translation']}", is_user=i == 1, avatar_style="bottts",
+                    seed=AVATAR_SEED[i],
                     key=message_counter)
             message_counter += 1
 
@@ -86,6 +87,7 @@ def show_messages(mesg_1, mesg_2, message_counter,
             st.audio(sound_file)
 
     return message_counter
+
 
 def text_to_speech(text, lang):
     """

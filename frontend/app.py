@@ -1,5 +1,6 @@
+""" This script defines the Streamlit app for the Parrot-AI project. """
+
 import os
-import requests
 import streamlit as st
 from src.conversation import setup_conversation
 from src.utils import initialize_session_state
@@ -65,5 +66,6 @@ translate_col, original_col, audio_col = st.columns(3)
 conversation_container = st.container()
 
 # Set up the conversation with the provided settings
-setup_conversation(conversation_container, translate_col, original_col, audio_col, learning_mode,
-                   role_dict, language, scenario, proficiency_level, session_length, time_delay)
+setup_conversation(conversation_container, translate_col, original_col, audio_col,
+                   learning_mode, role_dict, language, scenario, proficiency_level,
+                   session_length, time_delay)
