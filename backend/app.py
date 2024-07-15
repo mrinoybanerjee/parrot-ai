@@ -1,3 +1,5 @@
+""" FastAPI application to generate conversations using the DualChatbot class. """
+
 import os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -7,10 +9,10 @@ app = FastAPI()
 # Use the llamafile server URL
 LLM_SERVER = os.environ.get('LLM_SERVER', 'http://localhost:8080')
 
+
 class ConversationRequest(BaseModel):
     """
     Pydantic model to define the request schema for conversation generation.
-    
     Attributes:
         engine (str): The type of engine to use for the chatbots.
         role_dict (dict): The dictionary containing the roles for each chatbot.
@@ -28,10 +30,10 @@ class ConversationRequest(BaseModel):
     learning_mode: str
     session_length: str
 
+
 class ConversationResponse(BaseModel):
     """
     Pydantic model to define the response schema for conversation generation.
-    
     Attributes:
         response1 (str): The response from the first chatbot.
         response2 (str): The response from the second chatbot.
@@ -43,8 +45,10 @@ class ConversationResponse(BaseModel):
     translate1: str
     translate2: str
 
+
 # Global variable to store the DualChatbot instance
 dual_chatbot = None
+
 
 @app.post("/generate_conversation", response_model=ConversationResponse)
 async def generate_conversation(request: ConversationRequest):
@@ -52,7 +56,8 @@ async def generate_conversation(request: ConversationRequest):
     Endpoint to generate a conversation based on the provided request parameters.
 
     Args:
-        request (ConversationRequest): The request parameters for generating the conversation.
+        request (ConversationRequest): The request parameters for generating the
+          conversation.
 
     Returns:
         ConversationResponse: The responses and translations from both chatbots.
@@ -83,28 +88,33 @@ async def generate_conversation(request: ConversationRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/generate_summary")
 async def generate_summary(request: ConversationRequest):
     """
     Endpoint to generate a summary of the conversation.
 
     Args:
-        request (ConversationRequest): The request parameters for generating the summary.
+        request (ConversationRequest): The request parameters for generating
+          the summary.
 
     Returns:
         dict: A dictionary containing the summary of the conversation.
 
     Raises:
-        HTTPException: If no conversation has been generated or if there is an error during the summary generation.
+        HTTPException: If no conversation has been generated or if there is an error
+          during the summary generation.
     """
     global dual_chatbot
     try:
         if dual_chatbot is None:
-            raise HTTPException(status_code=400, detail="No conversation has been generated yet.")
+            raise HTTPException(status_code=400,
+                                detail="No conversation has been generated yet.")
         summary = dual_chatbot.summary()
         return {"summary": summary}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/reset_conversation")
 async def reset_conversation():
