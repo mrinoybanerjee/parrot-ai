@@ -21,17 +21,19 @@ AUDIO_SPEECH = {
     'French': 'fr'
 }
 
+
 class Chatbot:
     """
     A class to represent a chatbot using OpenAI's language model.
 
     Attributes:
-        client (OpenAI): The OpenAI client for interacting with the language model.
+        client (OpenAI): The OpenAI client for interacting with the language 
+        model.
         memory (list): The conversation history.
         prompt (str): The system prompt for the chatbot.
     """
 
-    def __init__(self, engine):
+    def __init__(self, engine, llm_server):
         """
         Initialize the Chatbot with a specific engine.
 
@@ -43,7 +45,7 @@ class Chatbot:
         """
         if engine == "OpenAI":
             self.client = OpenAI(
-                base_url=f"{LLM_SERVER}/v1",
+                base_url=f"{llm_server}/v1",
                 api_key="sk-no-key-required"
             )
         else:
@@ -51,7 +53,8 @@ class Chatbot:
         self.memory = []
         self.prompt = None
 
-    def instruct(self, role, oppo_role, language, scenario, session_length, proficiency_level, learning_mode, starter=False):
+    def instruct(self, role, oppo_role, language, scenario, session_length, 
+                 proficiency_level, learning_mode, starter=False):
         """
         Instruct the chatbot with specific conversation parameters.
 
@@ -60,10 +63,14 @@ class Chatbot:
             oppo_role (dict): The role of the opponent chatbot.
             language (str): The language of the conversation.
             scenario (str): The scenario of the conversation.
-            session_length (str): The length of the session ('Short' or 'Long').
-            proficiency_level (str): The proficiency level of the language learner.
-            learning_mode (str): The learning mode ('Conversation' or 'Debate').
-            starter (bool, optional): Whether the chatbot starts the conversation. Defaults to False.
+            session_length (str): The length of the session
+              ('Short' or 'Long').
+            proficiency_level (str): The proficiency level of the language
+            learner.
+            learning_mode (str): The learning mode
+            ('Conversation' or 'Debate').
+            starter (bool, optional): Whether the chatbot starts the
+            conversation. Defaults to False.
         """
         self.role = role
         self.oppo_role = oppo_role
@@ -257,7 +264,7 @@ class DualChatbot:
         current_speaker (str): The current speaker ('role1' or 'role2').
     """
 
-    def __init__(self, engine, role_dict, language, scenario, proficiency_level, learning_mode, session_length):
+    def __init__(self, engine, role_dict, language, scenario, proficiency_level, learning_mode, session_length, llm_server):
         """
         Initialize the DualChatbot with specific conversation parameters.
 
@@ -275,7 +282,7 @@ class DualChatbot:
         self.language = language
         self.chatbots = role_dict
         for k in role_dict.keys():
-            self.chatbots[k].update({'chatbot': Chatbot(engine)})
+            self.chatbots[k].update({'chatbot': Chatbot(engine, llm_server)})
 
         self.chatbots['role1']['chatbot'].instruct(role=self.chatbots['role1'],
                                                    oppo_role=self.chatbots['role2'],

@@ -16,7 +16,7 @@ def chatbot(mock_llm_server):
     """
     with mock.patch('backend.src.chatbot.OpenAI') as mock_openai:
         mock_openai.return_value.chat.completions.create.return_value.choices[0].message.content = "Mocked LLM response"
-        return Chatbot(engine="OpenAI")
+        return Chatbot(engine="OpenAI", llm_server="http://mock-llm-server")
 
 @pytest.fixture
 def dual_chatbot(mock_llm_server):
@@ -35,8 +35,16 @@ def dual_chatbot(mock_llm_server):
             'role1': {'name': 'Customer', 'action': 'ordering food'},
             'role2': {'name': 'Waitstaff', 'action': 'taking the order'}
         }
-        return DualChatbot(engine="OpenAI", role_dict=role_dict, language="Hindi", scenario="at a restaurant", 
-                           proficiency_level="Beginner", learning_mode="Conversation", session_length="Short")
+        return DualChatbot(
+            engine="OpenAI",
+            role_dict=role_dict,
+            language="Hindi",
+            scenario="at a restaurant",
+            proficiency_level="Beginner",
+            learning_mode="Conversation",
+            session_length="Short",
+            llm_server="http://mock-llm-server"
+        )
 
 def test_instruct(chatbot):
     """

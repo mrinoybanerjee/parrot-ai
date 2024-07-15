@@ -1,8 +1,11 @@
+import os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from src.chatbot import DualChatbot
 
 app = FastAPI()
+# Use the llamafile server URL
+LLM_SERVER = os.environ.get('LLM_SERVER', 'http://localhost:8080')
 
 class ConversationRequest(BaseModel):
     """
@@ -67,7 +70,8 @@ async def generate_conversation(request: ConversationRequest):
                 request.scenario,
                 request.proficiency_level,
                 request.learning_mode,
-                request.session_length
+                request.session_length,
+                llm_server=LLM_SERVER
             )
         response1, response2, translate1, translate2 = dual_chatbot.step()
         return ConversationResponse(

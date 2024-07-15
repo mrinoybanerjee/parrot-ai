@@ -1,4 +1,3 @@
-import pytest
 from unittest import mock
 from frontend.src.conversation import generate_conversation, setup_conversation
 import streamlit as st
