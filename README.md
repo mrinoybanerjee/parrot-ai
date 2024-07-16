@@ -67,6 +67,20 @@ parrot-ai/
 └── pytest.ini
 ```
 
+## 🏛 Architecture
+
+Parrot-AI uses a containerized microservices architecture. The diagram below illustrates the main components and their interactions:
+
+![Parrot-AI Architecture Diagram](assets/architecture_diagram.png)
+* Architecture diagram of Parrot-AI showing the interaction between frontend, backend, Docker containers, and the local LLM (llamafile).*
+
+Key components:
+- Frontend: Streamlit-based user interface
+- Backend: FastAPI server handling business logic
+- Docker: Containerization of frontend and backend services
+- LLM: Local language model (llamafile) for generating responses
+
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -184,4 +198,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📬 Contact
 
-[Mrinoy Banerjee] - [mrinoybanerjee@gmail.com]
+Mrinoy Banerjee - [mrinoybanerjee@gmail.com]
