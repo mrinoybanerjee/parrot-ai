@@ -58,13 +58,16 @@ parrot-ai/
 ├── .github/
 │   └── workflows/
 │       └── ci-cd.yml
-│
+├── assets/
+│   └── architecture_diagram.png
 ├── .gitignore
 ├── docker-compose.yml
 ├── LICENSE
 ├── README.md
 ├── conftest.py
+├── evaluate.py
 └── pytest.ini
+
 ```
 
 ## 🏛 Architecture
@@ -145,9 +148,48 @@ docker-compose run test
 
 This will run the test suite and generate a coverage report.
 
-## Performance/Evaluation Results
+## Performance and Evaluation
 
-[performance/evaluation results here]
+Parrot-AI undergoes regular automated evaluations to ensure high-quality performance. Our evaluation process measures several key metrics:
+
+- **Latency**: The time taken to generate responses.
+- **Output Speed**: The rate at which the model generates tokens.
+- **Cosine Similarity**: Measures how well the generated responses align with the expected outputs.
+- **Levenshtein Distance**: Evaluates the degree of difference between the generated responses and expected outputs.
+- **Load Testing**: The system's performance under concurrent requests.
+
+### Latest Evaluation Results
+
+For the most up-to-date evaluation results, please see our [EVALUATION_RESULTS.md](EVALUATION_RESULTS.md) file.
+
+#### Key Metrics Overview:
+
+- **Average Latency**: Measures the responsiveness of the system.
+- **Average Output Speed**: Indicates the efficiency of the model in generating tokens.
+- **Average Cosine Similarity Score**: Shows the relevancy and alignment of the generated responses with the expected outputs.
+- **Average Levenshtein Distance**: Indicates the textual similarity between generated responses and expected outputs.
+
+#### Load Test Performance:
+
+- **Average Response Time**: The average time taken to respond under load.
+- **95th Percentile Response Time**: The response time under load for 95% of the requests, ensuring performance consistency under high demand.
+
+These metrics are continuously monitored in order to improve with each update to Parrot-AI. Our automated evaluation process, integrated into our CI/CD pipeline, ensures that every change is thoroughly tested for performance impacts.
+
+### Running Evaluations Locally
+
+To run the evaluation script locally:
+
+1. Install all requirements:
+```bash
+pip install -r requirements.txt
+```
+2. Ensure Parrot-AI is running (both backend and frontend).
+3. Run the following command:
+```bash
+python evaluate.py
+```
+4. The results will be saved in `EVALUATION_RESULTS.md` and logged to the console.
 
 ## Demo Video
 
