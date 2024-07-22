@@ -11,3 +11,7 @@ flake8
 requests-mock
 mock
 pytest-cov
+nltk
+transformers
+torch
+tqdm

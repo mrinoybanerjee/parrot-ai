@@ -127,3 +127,14 @@ async def reset_conversation():
     global dual_chatbot
     dual_chatbot = None
     return {"message": "Conversation reset successfully"}
+
+
+@app.get("/")
+async def root():
+    """
+    Root endpoint to check if the backend server is running.
+    
+    Returns:
+        dict: A message indicating that the Parrot-AI backend is running.
+    """
+    return {"message": "Parrot-AI backend is running"}

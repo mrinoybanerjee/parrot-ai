@@ -72,6 +72,27 @@ jobs:
       with:
         dockerfile: ./frontend/Dockerfile
 
+  evaluate:
+    needs: [test, build-and-push]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.8'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Run evaluation
+      run: python evaluate.py
+    - name: Upload evaluation results
+      uses: actions/upload-artifact@v3
+      with:
+        name: evaluation-results
+        path: EVALUATION_RESULTS.md
+
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
