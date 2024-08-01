@@ -126,7 +126,7 @@ Key components:
 
 3. Open your web browser and navigate to `http://localhost:8501`
 
-[Application screenshot]
+![Application Home Page](assets/homepage.png)
 
 4. Configure your session in the sidebar:
    - Choose learning mode (Conversation or Debate)
@@ -134,9 +134,20 @@ Key components:
    - For Conversation mode: input roles and actions
    - For Debate mode: input the debate topic
 
+![Session Configuration](assets/spanish.png)
+
 5. Click "Generate" to create your language learning script
 
+6. Scroll to the bottom of the generated conversation to see key learning points
+
+![Key Learning Points](assets/summary.png)
+
 6. Use the provided buttons to translate, show original text, or play audio
+
+![Translate To English](assets/translate_to_english.png)
+
+![Play Audio](assets/play_audio.png)
+
 
 ## 🧪 Running Tests
 
