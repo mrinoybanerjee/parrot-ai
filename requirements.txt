@@ -1,5 +1,5 @@
-fastapi==0.85.0
-uvicorn==0.18.3
+fastapi
+uvicorn
 pydantic==1.10.2
 python-dotenv==1.0.1
 openai
@@ -7,3 +7,14 @@ streamlit
 streamlit-chat
 gtts
 pytest
+flake8
+requests-mock
+mock
+pytest-cov
+nltk
+transformers
+torch
+tqdm
+matplotlib
+seaborn
+pandas

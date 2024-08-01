@@ -3,3 +3,12 @@ src/venv
 src/__pycache__
 .pytest_cache
 tests/__pycache__
+venv/
+__pycache__/
+*.pyc
+*.llamafile
+llama.log
+coverage.xml
+.coverage
+.DS_Store
+tests/.DS_Store

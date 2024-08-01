@@ -1,6 +1,12 @@
+""" This script defines the Streamlit app for the Parrot-AI project. """
+
+import os
 import streamlit as st
-from src.conversation import setup_conversation, show_messages
+from src.conversation import setup_conversation
 from src.utils import initialize_session_state
+
+# Get the backend server URL from environment variables
+BACKEND_SERVER = os.environ.get('BACKEND_SERVER', 'http://localhost:8000')
 
 # Set the title of the app
 st.title('Parrot-AI 🦜🌍')
@@ -20,6 +26,7 @@ PROFICIENCY_LEVELS = ['Beginner', 'Intermediate', 'Advanced']
 # Add a selectbox for learning mode
 learning_mode = st.sidebar.selectbox('Learning Mode 📖', ('Conversation', 'Debate'))
 
+# Configure settings based on the selected learning mode
 if learning_mode == 'Conversation':
     role1 = st.sidebar.text_input('Role 1 🎭', 'Customer')
     action1 = st.sidebar.text_input('Action 1 🗣️', 'ordering food')
@@ -44,6 +51,7 @@ else:
     }
     time_delay = 5
 
+# Add selectboxes for language, session length, and proficiency level
 language = st.sidebar.selectbox('Target Language 🔤', LANGUAGES)
 session_length = st.sidebar.selectbox('Session Length ⏰', SESSION_LENGTHS)
 proficiency_level = st.sidebar.selectbox('Proficiency Level 🏆', PROFICIENCY_LEVELS)
@@ -57,5 +65,7 @@ translate_col, original_col, audio_col = st.columns(3)
 # Create the conversation container
 conversation_container = st.container()
 
-setup_conversation(conversation_container, translate_col, original_col, audio_col, learning_mode,
-                   role_dict, language, scenario, proficiency_level, session_length, time_delay)
+# Set up the conversation with the provided settings
+setup_conversation(conversation_container, translate_col, original_col, audio_col,
+                   learning_mode, role_dict, language, scenario, proficiency_level,
+                   session_length, time_delay)
