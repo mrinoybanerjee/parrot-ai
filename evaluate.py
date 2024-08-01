@@ -1,6 +1,7 @@
 """ Evaluation script for Parrot-AI conversational AI engine. """
 
 import time
+import os
 import concurrent.futures
 import statistics
 import logging
@@ -12,6 +13,8 @@ import nltk
 import torch
 import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModel
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Set up logging
 logging.basicConfig(
@@ -124,6 +127,70 @@ def load_test(endpoint: str, payload: Dict, num_requests: int) -> List[float]:
     return [r for r in results if r != float('inf')]  # Filter out timeout results
 
 
+def analyze_response_time_vs_length(endpoint: str,
+                                    payloads: List[Dict]) -> List[Tuple[int, float]]:
+    """Analyze response time vs input length."""
+    results = []
+    for payload in tqdm(payloads, desc="Analyzing response time vs length"):
+        input_length = len(payload['input_text'].split())
+        latency, _ = measure_latency(endpoint, payload)
+        if latency != float('inf'):
+            results.append((input_length, latency))
+        time.sleep(1)  # Add a small delay to avoid overwhelming the server
+    return results
+
+
+def visualize_results(latencies, output_speeds, similarity_scores, levenshtein_scores,
+                      response_time_vs_length):
+    """Generate visualizations for the evaluation results."""
+    # Ensure assets folder exists
+    assets_folder = "assets"
+    os.makedirs(assets_folder, exist_ok=True)
+
+    # Latency and Output Speed
+    if latencies and output_speeds:
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+        sns.histplot(latencies, ax=ax1, kde=True)
+        ax1.set_title('Distribution of Latencies')
+        ax1.set_xlabel('Latency (seconds)')
+        sns.histplot(output_speeds, ax=ax2, kde=True)
+        ax2.set_title('Distribution of Output Speeds')
+        ax2.set_xlabel('Output Speed (tokens/second)')
+        plt.tight_layout()
+        plt.savefig(os.path.join(assets_folder, 'latency_output_speed.png'))
+        plt.close()
+    else:
+        logger.warning("Not enough data to plot latency and output speed.")
+    
+    # Response Time vs Input Length
+    if response_time_vs_length:
+        plt.figure(figsize=(10, 5))
+        x, y = zip(*response_time_vs_length)
+        sns.scatterplot(x=x, y=y)
+        plt.title('Response Time vs Input Length')
+        plt.xlabel('Input Length (words)')
+        plt.ylabel('Response Time (seconds)')
+        plt.savefig(os.path.join(assets_folder, 'response_time_vs_length.png'))
+        plt.close()
+    else:
+        logger.warning("Not enough data to plot response time vs input length.")
+    
+    # Similarity and Levenshtein scores
+    if similarity_scores and levenshtein_scores:
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+        sns.boxplot(y=similarity_scores, ax=ax1)
+        ax1.set_title('Distribution of Cosine Similarity Scores')
+        ax1.set_ylabel('Cosine Similarity')
+        sns.boxplot(y=levenshtein_scores, ax=ax2)
+        ax2.set_title('Distribution of Levenshtein Distances')
+        ax2.set_ylabel('Levenshtein Distance')
+        plt.tight_layout()
+        plt.savefig(os.path.join(assets_folder, 'similarity_levenshtein.png'))
+        plt.close()
+    else:
+        logger.warning("Not enough data to plot similarity and Levenshtein.")
+
+
 def main():
     """Main function for the evaluation script."""
     logger.info("Starting evaluation of Parrot-AI...")
@@ -206,23 +273,39 @@ def main():
     logger.info("Performing load test...")
     load_test_results = load_test("generate_conversation", payload, 5)
 
+    # Response time vs input length analysis
+    logger.info("Analyzing response time vs input length...")
+    response_time_vs_length_payloads = [
+        {**payload, "input_text": " ".join(["test"] * i)} for i in range(10, 110, 10)
+    ]
+    response_time_vs_length = (analyze_response_time_vs_length(
+        "generate_conversation", response_time_vs_length_payloads))
+
     # Calculate and log results
     avg_latency = statistics.mean(latencies) if latencies else float('inf')
     avg_output_speed = statistics.mean(output_speeds) if output_speeds else 0
     avg_similarity = statistics.mean(similarity_scores) if similarity_scores else 0
     avg_levenshtein = statistics.mean(levenshtein_scores) if levenshtein_scores else 0
+
     load_test_avg = (statistics.mean(load_test_results)
                      if load_test_results else float('inf'))
     load_test_95th = (statistics.quantiles(load_test_results, n=20)[-1]
-                      if len(load_test_results) >= 20 else float('nan'))
-
+                      if len(load_test_results) >= 20 else None)
     logger.info("Average Latency: %.2f seconds", avg_latency)
+
     logger.info("Average Output Speed: %.2f tokens/second", avg_output_speed)
     logger.info("Average Cosine Similarity Score: %.2f", avg_similarity)
     logger.info("Average Levenshtein Distance: %.2f", avg_levenshtein)
     logger.info("Load Test - Average response time: %.2f seconds", load_test_avg)
-    logger.info("Load Test - 95th percentile response time: %.2f seconds",
-                load_test_95th)
+    if load_test_95th is not None:
+        logger.info("Load Test - 95th percentile response time: %.2f seconds",
+                    load_test_95th)
+    else:
+        logger.warning("Not enough data to calculate 95th percentile response time")
+
+    # Visualize results
+    visualize_results(latencies, output_speeds, similarity_scores, levenshtein_scores,
+                      response_time_vs_length)
 
     # Generate markdown for README
     markdown = f"""
@@ -238,13 +321,23 @@ Here are the results:
 
 **Load Test Results** (5 concurrent requests):
 - Average response time: {load_test_avg:.2f} seconds
-- 95th percentile response time: {load_test_95th:.2f} seconds
+"""
+    if load_test_95th is not None:
+        markdown += f"- 95th percentile response time: {load_test_95th:.2f} seconds\n"
+    else:
+        markdown += "- 95th percentile response time: Not enough data\n"
 
+    markdown += """
 These metrics demonstrate Parrot-AI's performance across various dimensions:
 - The latency and output speed indicate the system's responsiveness.
 - The cosine similarity score shows how well responses align with expected outputs.
 - The Levenshtein distance shows the degree of difference between responses.
 - Load test results demonstrate the system's ability to handle concurrent requests.
+
+For detailed visualizations of these results, please refer to the following images:
+- [Latency and Output Speed Distribution](latency_output_speed.png)
+- [Response Time vs Input Length](response_time_vs_length.png)
+- [Similarity and Levenshtein Scores](similarity_levenshtein.png)
 """
     with open("EVALUATION_RESULTS.md", "w") as f:
         f.write(markdown)
