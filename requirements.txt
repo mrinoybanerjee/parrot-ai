@@ -15,3 +15,6 @@ nltk
 transformers
 torch
 tqdm
+matplotlib
+seaborn
+pandas
