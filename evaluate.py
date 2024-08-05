@@ -4,10 +4,9 @@ import time
 import os
 import statistics
 import logging
-from typing import Dict, List
+from typing import Dict
 import requests
 from requests.exceptions import RequestException
-from tqdm import tqdm
 import nltk
 import torch
 import torch.nn.functional as F
