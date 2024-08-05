@@ -20,11 +20,17 @@ These metrics demonstrate Parrot-AI's performance across various dimensions:
 - Load test results demonstrate the system's ability to handle concurrent requests.
 
 For detailed visualizations of these results, please refer to the following images:
-![Latency and Output Speed Distribution](latency_output_speed.png)
-![Response Time vs Input Length](response_time_vs_length.png)
-![Similarity and Levenshtein Scores](similarity_levenshtein.png)
+
+![Latency and Output Speed Distribution](assets/latency_output_speed.png)
+
+![Response Time vs Input Length](assets/response_time_vs_length.png)
+
+![Similarity and Levenshtein Scores](assets/similarity_levenshtein.png)
 
 **Hardware Information**:
 ```
-{hardware_info}
+CPU: arm (8 cores, 8 threads)
+RAM: 8 GB
+Disk: 228 GB total
+OS: Darwin 23.3.0
 ```
