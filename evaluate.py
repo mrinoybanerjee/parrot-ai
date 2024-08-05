@@ -296,7 +296,7 @@ def main():
 
     # Load testing
     logger.info("Performing load test...")
-    load_test_results = load_test("generate_conversation", payload, 5)
+    load_test_results = load_test("generate_conversation", payload, 20)
 
     # Response time vs input length analysis
     logger.info("Analyzing response time vs input length...")
@@ -348,7 +348,7 @@ Here are the results:
 - **Average Cosine Similarity Score**: {avg_similarity:.2f}
 - **Average Levenshtein Distance**: {avg_levenshtein:.2f}
 
-**Load Test Results** (5 concurrent requests):
+**Load Test Results** (20 concurrent requests):
 - Average response time: {load_test_avg:.2f} seconds
 """
     if load_test_95th is not None:
@@ -364,9 +364,9 @@ These metrics demonstrate Parrot-AI's performance across various dimensions:
 - Load test results demonstrate the system's ability to handle concurrent requests.
 
 For detailed visualizations of these results, please refer to the following images:
-- [Latency and Output Speed Distribution](latency_output_speed.png)
-- [Response Time vs Input Length](response_time_vs_length.png)
-- [Similarity and Levenshtein Scores](similarity_levenshtein.png)
+![Latency and Output Speed Distribution](latency_output_speed.png)
+![Response Time vs Input Length](response_time_vs_length.png)
+![Similarity and Levenshtein Scores](similarity_levenshtein.png)
 
 **Hardware Information**:
 ```
