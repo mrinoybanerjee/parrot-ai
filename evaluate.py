@@ -15,6 +15,8 @@ import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModel
 import matplotlib.pyplot as plt
 import seaborn as sns
+import platform
+import psutil
 
 # Set up logging
 logging.basicConfig(
@@ -142,53 +144,76 @@ def analyze_response_time_vs_length(endpoint: str,
 
 def visualize_results(latencies, output_speeds, similarity_scores, levenshtein_scores,
                       response_time_vs_length):
-    """Generate visualizations for the evaluation results."""
+    """Generate high-quality visualizations for the evaluation results."""
+    sns.set_style("whitegrid")
+    sns.set_palette("deep")
+    
     # Ensure assets folder exists
     assets_folder = "assets"
     os.makedirs(assets_folder, exist_ok=True)
 
     # Latency and Output Speed
     if latencies and output_speeds:
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
-        sns.histplot(latencies, ax=ax1, kde=True)
-        ax1.set_title('Distribution of Latencies')
-        ax1.set_xlabel('Latency (seconds)')
-        sns.histplot(output_speeds, ax=ax2, kde=True)
-        ax2.set_title('Distribution of Output Speeds')
-        ax2.set_xlabel('Output Speed (tokens/second)')
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
+        sns.histplot(latencies, ax=ax1, kde=True, color='blue')
+        ax1.set_title('Distribution of Latencies', fontsize=16)
+        ax1.set_xlabel('Latency (seconds)', fontsize=12)
+        ax1.set_ylabel('Frequency', fontsize=12)
+        
+        sns.histplot(output_speeds, ax=ax2, kde=True, color='green')
+        ax2.set_title('Distribution of Output Speeds', fontsize=16)
+        ax2.set_xlabel('Output Speed (tokens/second)', fontsize=12)
+        ax2.set_ylabel('Frequency', fontsize=12)
+        
         plt.tight_layout()
-        plt.savefig(os.path.join(assets_folder, 'latency_output_speed.png'))
+        plt.savefig(os.path.join(assets_folder, 'latency_output_speed.png'), dpi=300)
         plt.close()
     else:
-        logger.warning("Not enough data to plot latency and output speed.")
+        logger.warning("Not enough data to plot latency and speed distributions.")
     
     # Response Time vs Input Length
     if response_time_vs_length:
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(12, 8))
         x, y = zip(*response_time_vs_length)
-        sns.scatterplot(x=x, y=y)
-        plt.title('Response Time vs Input Length')
-        plt.xlabel('Input Length (words)')
-        plt.ylabel('Response Time (seconds)')
-        plt.savefig(os.path.join(assets_folder, 'response_time_vs_length.png'))
+        sns.regplot(x=x, y=y, scatter_kws={'alpha':0.5}, line_kws={'color': 'red'})
+        plt.title('Response Time vs Input Length', fontsize=16)
+        plt.xlabel('Input Length (words)', fontsize=12)
+        plt.ylabel('Response Time (seconds)', fontsize=12)
+        plt.savefig(os.path.join(assets_folder, 'response_time_vs_length.png'), dpi=300)
         plt.close()
     else:
         logger.warning("Not enough data to plot response time vs input length.")
     
     # Similarity and Levenshtein scores
     if similarity_scores and levenshtein_scores:
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
-        sns.boxplot(y=similarity_scores, ax=ax1)
-        ax1.set_title('Distribution of Cosine Similarity Scores')
-        ax1.set_ylabel('Cosine Similarity')
-        sns.boxplot(y=levenshtein_scores, ax=ax2)
-        ax2.set_title('Distribution of Levenshtein Distances')
-        ax2.set_ylabel('Levenshtein Distance')
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
+        sns.boxplot(y=similarity_scores, ax=ax1, color='purple')
+        ax1.set_title('Distribution of Cosine Similarity Scores', fontsize=16)
+        ax1.set_ylabel('Cosine Similarity', fontsize=12)
+        
+        sns.boxplot(y=levenshtein_scores, ax=ax2, color='orange')
+        ax2.set_title('Distribution of Levenshtein Distances', fontsize=16)
+        ax2.set_ylabel('Levenshtein Distance', fontsize=12)
+        
         plt.tight_layout()
-        plt.savefig(os.path.join(assets_folder, 'similarity_levenshtein.png'))
+        plt.savefig(os.path.join(assets_folder, 'similarity_levenshtein.png'), dpi=300)
         plt.close()
     else:
-        logger.warning("Not enough data to plot similarity and Levenshtein.")
+        logger.warning("Not enough data to plot similarity score distributions.")
+
+
+def get_hardware_info():
+    """Get hardware information of the system."""
+    cpu_info = (
+        f"CPU: {platform.processor()} "
+        f"({psutil.cpu_count(logical=False)} cores, "
+        f"{psutil.cpu_count(logical=True)} threads)"
+    )
+    ram_info = f"RAM: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB"
+    disk_info = f"Disk: {round(psutil.disk_usage('/').total / (1024.0 ** 3))} GB total"
+    os_info = f"OS: {platform.system()} {platform.release()}"
+
+    return f"{cpu_info}\n{ram_info}\n{disk_info}\n{os_info}"
 
 
 def main():
@@ -271,7 +296,7 @@ def main():
 
     # Load testing
     logger.info("Performing load test...")
-    load_test_results = load_test("generate_conversation", payload, 5)
+    load_test_results = load_test("generate_conversation", payload, 20)
 
     # Response time vs input length analysis
     logger.info("Analyzing response time vs input length...")
@@ -306,6 +331,10 @@ def main():
     # Visualize results
     visualize_results(latencies, output_speeds, similarity_scores, levenshtein_scores,
                       response_time_vs_length)
+    
+    # Get hardware information
+    hardware_info = get_hardware_info()
+    logger.info("Hardware Information:\n%s", hardware_info)
 
     # Generate markdown for README
     markdown = f"""
@@ -319,7 +348,7 @@ Here are the results:
 - **Average Cosine Similarity Score**: {avg_similarity:.2f}
 - **Average Levenshtein Distance**: {avg_levenshtein:.2f}
 
-**Load Test Results** (5 concurrent requests):
+**Load Test Results** (20 concurrent requests):
 - Average response time: {load_test_avg:.2f} seconds
 """
     if load_test_95th is not None:
@@ -335,9 +364,14 @@ These metrics demonstrate Parrot-AI's performance across various dimensions:
 - Load test results demonstrate the system's ability to handle concurrent requests.
 
 For detailed visualizations of these results, please refer to the following images:
-- [Latency and Output Speed Distribution](latency_output_speed.png)
-- [Response Time vs Input Length](response_time_vs_length.png)
-- [Similarity and Levenshtein Scores](similarity_levenshtein.png)
+![Latency and Output Speed Distribution](latency_output_speed.png)
+![Response Time vs Input Length](response_time_vs_length.png)
+![Similarity and Levenshtein Scores](similarity_levenshtein.png)
+
+**Hardware Information**:
+```
+{hardware_info}
+```
 """
     with open("EVALUATION_RESULTS.md", "w") as f:
         f.write(markdown)
