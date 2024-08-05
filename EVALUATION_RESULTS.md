@@ -9,7 +9,7 @@ Here are the results:
 - **Average Cosine Similarity Score**: 0.74
 - **Average Levenshtein Distance**: 166.67
 
-**Load Test Results** (5 concurrent requests):
+**Load Test Results** (20 concurrent requests):
 - Average response time: 72.47 seconds
 - 95th percentile response time: Not enough data
 
@@ -28,9 +28,9 @@ For detailed visualizations of these results, please refer to the following imag
 ![Similarity and Levenshtein Scores](assets/similarity_levenshtein.png)
 
 **Hardware Information**:
-```
+
 CPU: arm (8 cores, 8 threads)
 RAM: 8 GB
 Disk: 228 GB total
 OS: Darwin 23.3.0
-```
+
