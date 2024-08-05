@@ -23,7 +23,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
-logger = logging.getLogger(name)
+logger = logging.getLogger(__name__)
 
 # Constants
 BACKEND_URL = "http://localhost:8000"
@@ -33,6 +33,7 @@ MODEL = AutoModel.from_pretrained("distilbert-base-uncased")
 
 # Download necessary NLTK data
 nltk.download('punkt', quiet=True)
+
 
 def check_backend_status() -> bool:
     """Check if the backend server is running and accessible."""
@@ -45,6 +46,7 @@ def check_backend_status() -> bool:
     except RequestException as e:
         logger.error("Error checking backend status: %s", str(e))
         return False
+
 
 def measure_latency(endpoint: str, payload: Dict) -> Tuple[float, Dict]:
     """Measure the latency of a request to the specified endpoint."""
@@ -65,9 +67,11 @@ def measure_latency(endpoint: str, payload: Dict) -> Tuple[float, Dict]:
         logger.error("Error in measure_latency: %s", str(e))
         return float('inf'), {}
 
+
 def count_tokens(text: str) -> int:
     """Count the number of tokens in the given text using the BERT tokenizer."""
     return len(TOKENIZER.encode(text))
+
 
 def calculate_cosine_similarity(text1: str, text2: str) -> float:
     """Calculate cosine similarity between two texts using BERT embeddings."""
@@ -75,8 +79,8 @@ def calculate_cosine_similarity(text1: str, text2: str) -> float:
     inputs1 = TOKENIZER(text1, return_tensors="pt", padding=True, truncation=True)
     inputs2 = TOKENIZER(text2, return_tensors="pt", padding=True, truncation=True)
     with torch.no_grad():
-        outputs1 = MODEL(inputs1)
-        outputs2 = MODEL(inputs2)
+        outputs1 = MODEL(**inputs1)
+        outputs2 = MODEL(**inputs2)
     # Use mean pooling to get sentence embeddings
     embedding1 = outputs1.last_hidden_state.mean(dim=1).squeeze()
     embedding2 = outputs2.last_hidden_state.mean(dim=1).squeeze()
@@ -84,6 +88,7 @@ def calculate_cosine_similarity(text1: str, text2: str) -> float:
     cosine_sim = F.cosine_similarity(embedding1.unsqueeze(0),
                                      embedding2.unsqueeze(0), dim=1)
     return cosine_sim.item()
+
 
 def levenshtein_distance(s1: str, s2: str) -> int:
     """Compute the Levenshtein distance between two strings."""
@@ -105,12 +110,13 @@ def levenshtein_distance(s1: str, s2: str) -> int:
 
     return previous_row[-1]
 
+
 def load_test(endpoint: str, payload: Dict, num_requests: int) -> List[float]:
     """Perform a load test on the specified endpoint."""
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         futures = [
-            executor.submit(measurelatency, endpoint, payload)
-            for  in range(num_requests)
+            executor.submit(measure_latency, endpoint, payload)
+            for _ in range(num_requests)
         ]
         results = [
             future.result()[0]
@@ -122,20 +128,22 @@ def load_test(endpoint: str, payload: Dict, num_requests: int) -> List[float]:
         ]
     return [r for r in results if r != float('inf')]  # Filter out timeout results
 
+
 def analyze_response_time_vs_length(endpoint: str,
                                     payloads: List[Dict]) -> List[Tuple[int, float]]:
     """Analyze response time vs input length."""
     results = []
     for payload in tqdm(payloads, desc="Analyzing response time vs length"):
-        input_length = len(payload['inputtext'].split())
-        latency,  = measure_latency(endpoint, payload)
+        input_length = len(payload['input_text'].split())
+        latency, _ = measure_latency(endpoint, payload)
         if latency != float('inf'):
             results.append((input_length, latency))
         time.sleep(1)  # Add a small delay to avoid overwhelming the server
     return results
 
 
-def visualize_results(latencies, output_speeds, similarity_scores, levenshtein_scores, response_time_vs_length):
+def visualize_results(latencies, output_speeds, similarity_scores, levenshtein_scores,
+                      response_time_vs_length):
     """Generate high-quality visualizations for the evaluation results."""
     sns.set_style("whitegrid")
     sns.set_palette("deep")
@@ -161,7 +169,7 @@ def visualize_results(latencies, output_speeds, similarity_scores, levenshtein_s
         plt.savefig(os.path.join(assets_folder, 'latency_output_speed.png'), dpi=300)
         plt.close()
     else:
-        logger.warning("Not enough data to plot latency and output speed distributions.")
+        logger.warning("Not enough data to plot latency and speed distributions.")
     
     # Response Time vs Input Length
     if response_time_vs_length:
@@ -191,17 +199,22 @@ def visualize_results(latencies, output_speeds, similarity_scores, levenshtein_s
         plt.savefig(os.path.join(assets_folder, 'similarity_levenshtein.png'), dpi=300)
         plt.close()
     else:
-        logger.warning("Not enough data to plot similarity and Levenshtein score distributions.")
+        logger.warning("Not enough data to plot similarity score distributions.")
 
 
 def get_hardware_info():
     """Get hardware information of the system."""
-    cpu_info = f"CPU: {platform.processor()} ({psutil.cpu_count(logical=False)} cores, {psutil.cpu_count(logical=True)} threads)"
-    ram_info = f"RAM: {round(psutil.virtual_memory().total / (1024.0 **3))} GB"
-    disk_info = f"Disk: {round(psutil.disk_usage('/').total / (1024.0 **3))} GB total"
+    cpu_info = (
+        f"CPU: {platform.processor()} "
+        f"({psutil.cpu_count(logical=False)} cores, "
+        f"{psutil.cpu_count(logical=True)} threads)"
+    )
+    ram_info = f"RAM: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB"
+    disk_info = f"Disk: {round(psutil.disk_usage('/').total / (1024.0 ** 3))} GB total"
     os_info = f"OS: {platform.system()} {platform.release()}"
-    
+
     return f"{cpu_info}\n{ram_info}\n{disk_info}\n{os_info}"
+
 
 def main():
     """Main function for the evaluation script."""
@@ -318,11 +331,12 @@ def main():
     # Visualize results
     visualize_results(latencies, output_speeds, similarity_scores, levenshtein_scores,
                       response_time_vs_length)
-
+    
     # Get hardware information
     hardware_info = get_hardware_info()
     logger.info("Hardware Information:\n%s", hardware_info)
 
+    # Generate markdown for README
     markdown = f"""
 ## Performance/Evaluation Results
 
@@ -350,19 +364,20 @@ These metrics demonstrate Parrot-AI's performance across various dimensions:
 - Load test results demonstrate the system's ability to handle concurrent requests.
 
 For detailed visualizations of these results, please refer to the following images:
-- [Latency and Output Speed Distribution](assets/latency_output_speed.png)
-- [Response Time vs Input Length](assets/response_time_vs_length.png)
-- [Similarity and Levenshtein Scores](assets/similarity_levenshtein.png)
+- [Latency and Output Speed Distribution](latency_output_speed.png)
+- [Response Time vs Input Length](response_time_vs_length.png)
+- [Similarity and Levenshtein Scores](similarity_levenshtein.png)
 
-## Hardware Information
-
-The evaluation was performed on the following system:
+**Hardware Information**:
+```
 {hardware_info}
+```
 """
     with open("EVALUATION_RESULTS.md", "w") as f:
         f.write(markdown)
 
     logger.info("Evaluation complete. Results have been saved to EVALUATION_RESULTS.md")
 
-if name == "main":
+
+if __name__ == "__main__":
     main()
