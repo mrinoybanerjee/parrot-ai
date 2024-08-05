@@ -20,4 +20,3 @@ seaborn
 pandas
 psutil
 tabulate
-
