@@ -227,6 +227,24 @@ For local development without Docker:
    pytest
    ```
 
+
+## 🚀 Bonus: Embracing FastAPI
+
+For Parrot-AI's backend, I decided to step out of my comfort zone and learn FastAPI, despite my familiarity with Flask. This choice represented a calculated risk to explore modern API development practices. Here's why FastAPI proved to be an excellent decision:
+
+1. **High Performance**: FastAPI's speed rivals Go and NodeJS, crucial for our real-time conversation generation.
+
+2. **Automatic Documentation**: Unlike Flask, FastAPI generates interactive API docs (Swagger UI) out-of-the-box, streamlining our development process.
+
+3. **Type Safety**: FastAPI's use of Python type hints enhanced code reliability and IDE support.
+
+4. **Native Asynchronous Support**: While Flask requires extensions for async operations, FastAPI's built-in async capabilities future-proof our application.
+
+5. **Modern Python Practices**: Learning FastAPI encouraged the use of the latest Python features and best practices.
+
+While Flask would have been a comfortable choice, adopting FastAPI pushed me to grow as a developer and resulted in a more robust, future-ready backend for Parrot-AI.
+
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
