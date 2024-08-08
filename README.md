@@ -204,7 +204,7 @@ python evaluate.py
 
 ## Demo Video
 
-[Link to demo video]
+[Demo Video](https://youtu.be/XQmrTN0QzQQ)
 
 ## 🛠️ Development
 
@@ -239,8 +239,6 @@ For Parrot-AI's backend, I decided to step out of my comfort zone and learn Fast
 3. **Type Safety**: FastAPI's use of Python type hints enhanced code reliability and IDE support.
 
 4. **Native Asynchronous Support**: While Flask requires extensions for async operations, FastAPI's built-in async capabilities future-proof our application.
-
-5. **Modern Python Practices**: Learning FastAPI encouraged the use of the latest Python features and best practices.
 
 While Flask would have been a comfortable choice, adopting FastAPI pushed me to grow as a developer and resulted in a more robust, future-ready backend for Parrot-AI.
 
