@@ -18,3 +18,5 @@ tqdm
 matplotlib
 seaborn
 pandas
+psutil
+tabulate
