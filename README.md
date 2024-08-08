@@ -204,7 +204,7 @@ python evaluate.py
 
 ## Demo Video
 
-![Demo Video](https://youtu.be/XQmrTN0QzQQ)
+[Demo Video](https://youtu.be/XQmrTN0QzQQ)
 
 ## 🛠️ Development
 
