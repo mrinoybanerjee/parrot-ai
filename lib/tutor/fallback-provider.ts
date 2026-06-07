@@ -48,13 +48,56 @@ const partnerLines: Record<ScenarioConfig["language"], string[]> = {
   ],
 };
 
+const debateLines: Record<ScenarioConfig["language"], string[]> = {
+  English: [
+    "What is your strongest reason for that position?",
+    "I disagree slightly. Can you defend your point with one example?",
+  ],
+  Spanish: [
+    "¿Cuál es su razón más fuerte para esa postura?",
+    "No estoy totalmente de acuerdo. ¿Puede defender su punto con un ejemplo?",
+  ],
+  French: [
+    "Quelle est votre raison la plus forte pour cette position?",
+    "Je ne suis pas tout à fait d'accord. Pouvez-vous défendre votre point avec un exemple?",
+  ],
+  German: [
+    "Was ist Ihr stärkstes Argument für diese Position?",
+    "Ich stimme nicht ganz zu. Können Sie Ihren Punkt mit einem Beispiel verteidigen?",
+  ],
+  Hindi: [
+    "इस राय के लिए आपका सबसे मजबूत कारण क्या है?",
+    "मैं थोड़ा असहमत हूँ। क्या आप एक उदाहरण से अपनी बात समझा सकते हैं?",
+  ],
+  Japanese: [
+    "その意見の一番強い理由は何ですか。",
+    "少し違う意見です。例を一つ使って説明できますか。",
+  ],
+  Korean: [
+    "그 입장에 대한 가장 강한 이유는 무엇인가요?",
+    "저는 조금 다르게 생각합니다. 예를 하나 들어 설명해 주시겠어요?",
+  ],
+  Portuguese: [
+    "Qual é o motivo mais forte para essa posição?",
+    "Não concordo totalmente. Pode defender seu ponto com um exemplo?",
+  ],
+  Italian: [
+    "Qual è la ragione più forte per questa posizione?",
+    "Non sono del tutto d'accordo. Può difendere il suo punto con un esempio?",
+  ],
+  Arabic: [
+    "ما أقوى سبب لديك لهذا الرأي؟",
+    "أنا لا أتفق تماما. هل يمكنك الدفاع عن رأيك بمثال واحد؟",
+  ],
+};
+
 export function createFallbackTurn(
   config: ScenarioConfig,
   userInput: string,
   warning?: string,
 ): TutorTurnResponse {
   const shortInput = userInput.trim().slice(0, 140);
-  const lines = partnerLines[config.language];
+  const lines = config.mode === "Debate" ? debateLines[config.language] : partnerLines[config.language];
   const line = lines[shortInput.length % lines.length];
   const repairedPhrase = buildRepairPhrase(config);
   const feedback = buildCoachFeedback(config, shortInput, repairedPhrase);

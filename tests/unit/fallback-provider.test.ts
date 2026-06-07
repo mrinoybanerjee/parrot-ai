@@ -36,4 +36,18 @@ describe("createFallbackTurn", () => {
     expect(response.culturalNote).toMatch(/[\u0900-\u097F]/);
     expect(response.phraseBankAdditions.join(" ")).toMatch(/[\u0900-\u097F]/);
   });
+
+  it("changes the demo partner behavior for debate mode", () => {
+    const conversation = createFallbackTurn(
+      { ...defaultScenarioConfig, language: "English", mode: "Conversation" },
+      "I think this option is better.",
+    );
+    const debate = createFallbackTurn(
+      { ...defaultScenarioConfig, language: "English", mode: "Debate" },
+      "I think this option is better.",
+    );
+
+    expect(debate.partnerMessage).not.toBe(conversation.partnerMessage);
+    expect(debate.partnerMessage).toMatch(/reason|defend/i);
+  });
 });
