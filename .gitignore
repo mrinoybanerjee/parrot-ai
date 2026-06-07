@@ -1,5 +1,7 @@
 src/venv
 .env
+.env.local
+.env.*.local
 src/__pycache__
 .pytest_cache
 tests/__pycache__
@@ -12,3 +14,12 @@ coverage.xml
 .coverage
 .DS_Store
 tests/.DS_Store
+node_modules/
+.next/
+out/
+dist/
+build/
+tsconfig.tsbuildinfo
+playwright-report/
+test-results/
+coverage/
