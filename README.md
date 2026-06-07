@@ -63,6 +63,15 @@ npm run e2e
 
 Playwright starts the local Next.js dev server automatically for browser tests.
 
+## Production Readiness
+
+This branch is ready for a first production-style deployment of the web app, with these boundaries:
+
+- The app has request validation, structured tutor responses, basic per-instance API rate limiting, security headers, browser E2E coverage, and a health endpoint at `/api/health`.
+- The default tutor is deterministic demo mode, so the app works without paid API keys.
+- Browser speech uses the user's browser capabilities and can vary by device, browser, and language.
+- Stronger production controls still need external services: hosted rate limiting, auth, analytics, persistent user accounts, and a managed AI/voice provider for high-quality real-time speech.
+
 ## Planning Docs
 
 The overhaul planning docs live in `docs/overhaul/`:

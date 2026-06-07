@@ -22,6 +22,7 @@ import {
   messageSchema,
   scenarioConfigSchema,
   sessionScoreSchema,
+  tutorTurnResponseSchema,
   type CoachFeedback,
   type ConversationMessage,
   type Intensity,
@@ -199,7 +200,13 @@ export function ParrotApp() {
         throw new Error(`Tutor request failed with ${response.status}`);
       }
 
-      const result = (await response.json()) as TutorTurnResponse;
+      const responseBody = await response.json();
+      const parsedResult = tutorTurnResponseSchema.safeParse(responseBody);
+      if (!parsedResult.success) {
+        throw new Error("Tutor service returned an invalid response.");
+      }
+
+      const result: TutorTurnResponse = parsedResult.data;
       const partnerMessage = createMessage("partner", result.partnerMessage);
       const coachMessage = createMessage("coach", result.coachFeedback.summary);
       setMessages([...nextMessages, partnerMessage, coachMessage]);

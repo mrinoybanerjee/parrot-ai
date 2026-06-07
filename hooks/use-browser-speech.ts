@@ -85,8 +85,14 @@ export function useBrowserSpeech(onFinalTranscript: (text: string) => void): Spe
         setIsListening(false);
       };
       recognitionRef.current = recognition;
-      recognition.start();
-      setIsListening(true);
+      try {
+        recognition.start();
+        setIsListening(true);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Speech recognition could not start.";
+        setError(message);
+        setIsListening(false);
+      }
     },
     [],
   );
@@ -99,6 +105,7 @@ export function useBrowserSpeech(onFinalTranscript: (text: string) => void): Spe
       setError("Speech synthesis is not available in this browser.");
       return;
     }
+    setError(null);
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = languageCodes[language];
