@@ -45,6 +45,7 @@ type SavedState = {
   phraseBank: string[];
   lastFeedback: CoachFeedback | null;
   lastScore: SessionScore | null;
+  lastCulturalNote: string | null;
 };
 
 const storageKey = "parrot-ai-v2-session";
@@ -55,7 +56,44 @@ const savedStateSchema = z.object({
   phraseBank: z.array(z.string().min(1).max(180)).max(12).optional(),
   lastFeedback: coachFeedbackSchema.nullable().optional(),
   lastScore: sessionScoreSchema.nullable().optional(),
+  lastCulturalNote: z.string().min(1).max(500).nullable().optional(),
 });
+
+function formatTutorStatus(status: ProviderStatus | null): string {
+  if (!status) {
+    return "Tutor: checking";
+  }
+  if (status.provider === "ollama") {
+    return `Tutor: Ollama${status.ollamaModel ? ` (${status.ollamaModel})` : ""}`;
+  }
+  if (status.provider === "fallback") {
+    return "Tutor: demo";
+  }
+  return "Tutor: unavailable";
+}
+
+function tutorStatusTitle(status: ProviderStatus | null): string {
+  if (!status) {
+    return "Checking which tutor provider is active.";
+  }
+  if (status.provider === "ollama") {
+    return "Using the configured local Ollama chat model.";
+  }
+  if (status.provider === "fallback") {
+    return "Using the built-in demo tutor. No paid AI provider or local chat model is configured.";
+  }
+  return "Tutor provider status could not be checked.";
+}
+
+function speechStatusText(speech: ReturnType<typeof useBrowserSpeech>): string {
+  if (speech.isRecognitionSupported) {
+    return "Mic: browser";
+  }
+  if (speech.isSynthesisSupported) {
+    return "Audio: playback";
+  }
+  return "Voice: typed only";
+}
 
 export function ParrotApp() {
   const [config, setConfig] = useState<ScenarioConfig>(defaultScenarioConfig);
@@ -64,6 +102,7 @@ export function ParrotApp() {
   const [isSending, setIsSending] = useState(false);
   const [lastFeedback, setLastFeedback] = useState<CoachFeedback | null>(null);
   const [lastScore, setLastScore] = useState<SessionScore | null>(null);
+  const [lastCulturalNote, setLastCulturalNote] = useState<string | null>(null);
   const [phraseBank, setPhraseBank] = useState<string[]>([]);
   const [providerStatus, setProviderStatus] = useState<ProviderStatus | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
@@ -96,6 +135,9 @@ export function ParrotApp() {
       if (saved.lastScore) {
         setLastScore(saved.lastScore);
       }
+      if (saved.lastCulturalNote) {
+        setLastCulturalNote(saved.lastCulturalNote);
+      }
     } catch {
       window.localStorage.removeItem(storageKey);
     }
@@ -115,9 +157,10 @@ export function ParrotApp() {
       phraseBank,
       lastFeedback,
       lastScore,
+      lastCulturalNote,
     };
     window.localStorage.setItem(storageKey, JSON.stringify(state));
-  }, [config, lastFeedback, lastScore, messages, phraseBank]);
+  }, [config, lastCulturalNote, lastFeedback, lastScore, messages, phraseBank]);
 
   const handleFinalTranscript = useCallback((text: string) => {
     setDraft((current) => `${current}${current ? " " : ""}${text}`.trim());
@@ -162,6 +205,7 @@ export function ParrotApp() {
       setMessages([...nextMessages, partnerMessage, coachMessage]);
       setLastFeedback(result.coachFeedback);
       setLastScore(result.sessionScore);
+      setLastCulturalNote(result.culturalNote);
       setPhraseBank((current) =>
         Array.from(new Set([...result.phraseBankAdditions, ...current])).slice(0, 12),
       );
@@ -184,6 +228,7 @@ export function ParrotApp() {
     setDraft("");
     setLastFeedback(null);
     setLastScore(null);
+    setLastCulturalNote(null);
     setPhraseBank([]);
     setWarning(null);
   }
@@ -201,17 +246,21 @@ export function ParrotApp() {
           </div>
         </div>
         <div className="status-row" aria-label="System status">
-          <span className={`status-pill ${providerStatus?.provider === "fallback" ? "warn" : "good"}`}>
+          <span
+            className={`status-pill ${providerStatus?.provider === "fallback" ? "info" : "good"}`}
+            title={tutorStatusTitle(providerStatus)}
+          >
             <Bot size={15} />
-            {providerStatus
-              ? `AI: ${providerStatus.provider}${providerStatus.ollamaModel ? ` (${providerStatus.ollamaModel})` : ""}`
-              : "AI: checking"}
+            {formatTutorStatus(providerStatus)}
           </span>
-          <span className={`status-pill ${speech.isRecognitionSupported ? "good" : "warn"}`}>
+          <span
+            className={`status-pill ${speech.isRecognitionSupported ? "good" : "warn"}`}
+            title="Speech uses this browser's built-in speech APIs when available. Typed input always works."
+          >
             {speech.isRecognitionSupported ? <Mic size={15} /> : <MicOff size={15} />}
-            {speech.isRecognitionSupported ? "Speech ready" : "Typed mode"}
+            {speechStatusText(speech)}
           </span>
-          <button className="secondary-button" type="button" onClick={resetSession}>
+          <button className="secondary-button" type="button" onClick={resetSession} title="Clear this practice session">
             <RefreshCw size={16} />
             Reset
           </button>
@@ -232,6 +281,7 @@ export function ParrotApp() {
           onSend={sendTurn}
         />
         <LearningCoach
+          culturalNote={lastCulturalNote}
           feedback={lastFeedback}
           phraseBank={phraseBank}
           score={lastScore}
@@ -492,11 +542,13 @@ function ConversationWorkspace({
 }
 
 function LearningCoach({
+  culturalNote,
   feedback,
   phraseBank,
   score,
   warning,
 }: {
+  culturalNote: string | null;
   feedback: CoachFeedback | null;
   phraseBank: string[];
   score: SessionScore | null;
@@ -522,6 +574,11 @@ function LearningCoach({
           <div className="coach-card">
             <h4>Repair</h4>
             <p>{feedback?.correction ?? "A correction will appear after your first response."}</p>
+          </div>
+
+          <div className="coach-card">
+            <h4>Culture note</h4>
+            <p>{culturalNote ?? "A cultural note will appear after your first response."}</p>
           </div>
 
           <div className="coach-card">

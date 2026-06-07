@@ -16,8 +16,9 @@ test("completes a typed conversation turn", async ({ page }) => {
     }),
   ).toBeVisible();
   await expect(page.getByText("Repair")).toBeVisible();
+  await expect(page.getByText("Culture note")).toBeVisible();
   await expect(page.getByText("Phrase bank")).toBeVisible();
-  await expect(page.getByLabel("Phrase bank").getByText("Can I explain the situation first?")).toBeVisible();
+  await expect(page.getByLabel("Phrase bank").getByText("¿Puedo explicar primero la situación?")).toBeVisible();
 });
 
 test("mobile layout keeps the workspace usable", async ({ page }) => {
