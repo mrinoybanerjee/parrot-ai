@@ -47,6 +47,18 @@ the repository root, with the virtual environment active:
 LLM_SERVER=http://localhost:8080 uvicorn backend.app:app --host 127.0.0.1 --port 8000
 ```
 
+The default model identifier is `LLaMA_CPP`, as used by the original local server.
+If your OpenAI-compatible server requires a specific model name, set `LLM_MODEL`
+to that exact installed model. For example, with an already installed Ollama
+`qwen3:4b` model and its local server running:
+
+```sh
+LLM_SERVER=http://127.0.0.1:11434 LLM_MODEL=qwen3:4b uvicorn backend.app:app --host 127.0.0.1 --port 8000
+```
+
+This command does not download a model. Check `ollama list` first; model availability
+and generated language quality depend on your own installation.
+
 ```sh
 BACKEND_SERVER=http://localhost:8000 streamlit run frontend/app.py --server.address 127.0.0.1
 ```
@@ -68,7 +80,8 @@ docker compose up --build backend frontend
 
 The web interface and backend ports are published on loopback only. On Linux,
 configure `host.docker.internal` or change `LLM_SERVER` to a reachable model host
-in `docker-compose.yml`.
+in `docker-compose.yml`. Set `LLM_MODEL` when starting Compose if the server
+requires a different model identifier.
 
 ## Tests
 
@@ -103,8 +116,9 @@ Browser → Streamlit → FastAPI → local model server
   or use sensitive text. Model correctness and language quality need human review.
 - Model calls and frontend requests have timeouts. A failed conversation step
   clears that backend conversation so a retry cannot continue partial history.
-- Changing settings starts a new conversation; Generate clears prior learning
-  points. Existing generated text remains in the browser session until replaced.
+- Generate starts a new conversation and clears prior learning points. Editing
+  settings preserves the visible conversation and its original labels until you
+  select Generate again. Existing text remains in the browser session until replaced.
 
 ## Evaluation
 
@@ -119,6 +133,10 @@ readiness.
 The [model-free API benchmark](reports/synthetic-api-20261018.md) uses a loopback
 fake model and the real API/SDK. It checks synthetic session separation and
 failure handling; its timings do not include model inference or the browser.
+
+A [real local-model smoke check](reports/runtime-validation-20261018.md) completed
+the conversation and summary flow, but the summary contained incorrect grammar
+advice. Working integration does not establish reliable teaching content.
 
 ## Project layout
 
