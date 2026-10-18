@@ -1,6 +1,7 @@
-fastapi
+fastapi>=0.115,<1
+pydantic>=2,<3
 uvicorn
-openai
+openai>=1,<4
 python-dotenv
 gtts
 requests-mock

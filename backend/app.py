@@ -1,140 +1,142 @@
-""" FastAPI application to generate conversations using the DualChatbot class. """
+"""Local conversation API. State is scoped to an optional client session header."""
 
+import logging
 import os
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from src.chatbot import DualChatbot
+import threading
+import time
+from contextlib import contextmanager
+from typing import Dict, Literal, Optional
+
+from fastapi import FastAPI, Header, HTTPException
+from pydantic import BaseModel, Field
+
+try:  # support both `uvicorn backend.app:app` and the backend Docker image
+    from .src.chatbot import DualChatbot
+except ImportError:
+    from src.chatbot import DualChatbot
 
 app = FastAPI()
-# Use the llamafile server URL
-LLM_SERVER = os.environ.get('LLM_SERVER', 'http://localhost:8080')
+LLM_SERVER = os.environ.get("LLM_SERVER", "http://localhost:8080")
+logger = logging.getLogger(__name__)
+MAX_SESSIONS = 128
+SESSION_TTL = 3600
+# Local inference is serialized: a reset cannot race a step or summary. Sync
+# endpoints run in FastAPI's worker pool rather than blocking its event loop.
+_lock = threading.Lock()
+_sessions = {}
+
+
+class Role(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    action: str = Field(default="", max_length=1000)
 
 
 class ConversationRequest(BaseModel):
-    """
-    Pydantic model to define the request schema for conversation generation.
-    Attributes:
-        engine (str): The type of engine to use for the chatbots.
-        role_dict (dict): The dictionary containing the roles for each chatbot.
-        language (str): The language of the conversation.
-        scenario (str): The scenario of the conversation.
-        proficiency_level (str): The proficiency level of the language learner.
-        learning_mode (str): The learning mode ('Conversation' or 'Debate').
-        session_length (str): The length of the session ('Short' or 'Long').
-    """
-    engine: str
-    role_dict: dict
-    language: str
-    scenario: str
-    proficiency_level: str
-    learning_mode: str
-    session_length: str
+    engine: Literal["OpenAI"]
+    role_dict: Dict[Literal["role1", "role2"], Role]
+    language: Literal["English", "Hindi", "German", "Spanish", "French"]
+    scenario: str = Field(min_length=1, max_length=4000)
+    proficiency_level: Literal["Beginner", "Intermediate", "Advanced"]
+    learning_mode: Literal["Conversation", "Debate"]
+    session_length: Literal["Short", "Long"]
 
 
 class ConversationResponse(BaseModel):
-    """
-    Pydantic model to define the response schema for conversation generation.
-    Attributes:
-        response1 (str): The response from the first chatbot.
-        response2 (str): The response from the second chatbot.
-        translate1 (str): The translation of the first response.
-        translate2 (str): The translation of the second response.
-    """
     response1: str
     response2: str
     translate1: str
     translate2: str
 
 
-# Global variable to store the DualChatbot instance
-dual_chatbot = None
+@contextmanager
+def inference_slot():
+    if not _lock.acquire(timeout=5):
+        raise HTTPException(status_code=503, detail="The local model is busy. Try again shortly.")
+    try:
+        yield
+    finally:
+        _lock.release()
+
+
+def session_header(x_session_id: Optional[str]) -> str:
+    # No-header clients retain the original single-session API behavior.
+    return x_session_id or "legacy"
+
+
+def prune_sessions():
+    cutoff = time.monotonic() - SESSION_TTL
+    for key in list(_sessions):
+        if _sessions[key][2] < cutoff:
+            del _sessions[key]
+
+
+def request_config(request):
+    config = request.model_dump()
+    if set(config["role_dict"]) != {"role1", "role2"}:
+        raise HTTPException(status_code=422, detail="Provide role1 and role2.")
+    return config
 
 
 @app.post("/generate_conversation", response_model=ConversationResponse)
-async def generate_conversation(request: ConversationRequest):
-    """
-    Endpoint to generate a conversation based on the provided request parameters.
-
-    Args:
-        request (ConversationRequest): The request parameters for generating the
-          conversation.
-
-    Returns:
-        ConversationResponse: The responses and translations from both chatbots.
-
-    Raises:
-        HTTPException: If there is an error during the conversation generation.
-    """
-    global dual_chatbot
-    try:
-        if dual_chatbot is None:
-            dual_chatbot = DualChatbot(
-                request.engine,
-                request.role_dict,
-                request.language,
-                request.scenario,
-                request.proficiency_level,
-                request.learning_mode,
-                request.session_length,
-                llm_server=LLM_SERVER
-            )
-        response1, response2, translate1, translate2 = dual_chatbot.step()
-        return ConversationResponse(
-            response1=response1,
-            response2=response2,
-            translate1=translate1,
-            translate2=translate2
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+def generate_conversation(
+    request: ConversationRequest,
+    x_session_id: Optional[str] = Header(default=None, min_length=16, max_length=64, pattern=r"^[a-zA-Z0-9-]+$"),
+):
+    config = request_config(request)
+    key = session_header(x_session_id)
+    with inference_slot():
+        prune_sessions()
+        current = _sessions.get(key)
+        if current is None and len(_sessions) >= MAX_SESSIONS:
+            raise HTTPException(status_code=429, detail="Too many active sessions. Try again later.")
+        try:
+            if current is None or current[1] != config:
+                bot = DualChatbot(**request.model_dump(), llm_server=LLM_SERVER)
+            else:
+                bot = current[0]
+            response1, response2, translate1, translate2 = bot.step()
+            _sessions[key] = (bot, config, time.monotonic())
+            return ConversationResponse(response1=response1, response2=response2,
+                                        translate1=translate1, translate2=translate2)
+        except Exception:
+            # A partial step must not be silently continued on retry.
+            _sessions.pop(key, None)
+            logger.error("Conversation generation failed")
+            raise HTTPException(status_code=502, detail="The local model could not generate a conversation. Check the model server and retry.") from None
 
 
 @app.post("/generate_summary")
-async def generate_summary(request: ConversationRequest):
-    """
-    Endpoint to generate a summary of the conversation.
-
-    Args:
-        request (ConversationRequest): The request parameters for generating
-          the summary.
-
-    Returns:
-        dict: A dictionary containing the summary of the conversation.
-
-    Raises:
-        HTTPException: If no conversation has been generated or if there is an error
-          during the summary generation.
-    """
-    global dual_chatbot
-    try:
-        if dual_chatbot is None:
-            raise HTTPException(status_code=400,
-                                detail="No conversation has been generated yet.")
-        summary = dual_chatbot.summary()
+def generate_summary(
+    request: ConversationRequest,
+    x_session_id: Optional[str] = Header(default=None, min_length=16, max_length=64, pattern=r"^[a-zA-Z0-9-]+$"),
+):
+    config = request_config(request)
+    with inference_slot():
+        prune_sessions()
+        key = session_header(x_session_id)
+        current = _sessions.get(key)
+        if current is None:
+            raise HTTPException(status_code=400, detail="No conversation has been generated yet.")
+        if current[1] != config:
+            raise HTTPException(status_code=409, detail="Settings changed. Generate a new conversation first.")
+        try:
+            summary = current[0].summary()
+        except Exception:
+            logger.error("Summary generation failed")
+            raise HTTPException(status_code=502, detail="The local model could not generate a summary. Try again.") from None
+        _sessions[key] = (current[0], current[1], time.monotonic())
         return {"summary": summary}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/reset_conversation")
-async def reset_conversation():
-    """
-    Endpoint to reset the conversation history.
-
-    Returns:
-        dict: A message indicating that the conversation has been reset.
-    """
-    global dual_chatbot
-    dual_chatbot = None
+def reset_conversation(
+    x_session_id: Optional[str] = Header(default=None, min_length=16, max_length=64, pattern=r"^[a-zA-Z0-9-]+$"),
+):
+    with inference_slot():
+        _sessions.pop(session_header(x_session_id), None)
     return {"message": "Conversation reset successfully"}
 
 
 @app.get("/")
-async def root():
-    """
-    Root endpoint to check if the backend server is running.
-    
-    Returns:
-        dict: A message indicating that the Parrot-AI backend is running.
-    """
+def root():
     return {"message": "Parrot-AI backend is running"}

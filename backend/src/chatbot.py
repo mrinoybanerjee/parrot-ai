@@ -3,6 +3,7 @@ Module for chatbot interaction system.
 """
 
 import os
+from copy import deepcopy
 from io import BytesIO
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -46,7 +47,9 @@ class Chatbot:
         if engine == "OpenAI":
             self.client = OpenAI(
                 base_url=f"{llm_server}/v1",
-                api_key="sk-no-key-required"
+                api_key="sk-no-key-required",
+                timeout=120.0,
+                max_retries=0
             )
         else:
             raise KeyError("Currently unsupported language model type!")
@@ -212,15 +215,17 @@ class Chatbot:
 
         max_tokens = 4096 - 500
         context_tokens = 0
+        history = []
         for mem in reversed(self.memory):
             context_tokens += len(mem['text'].split())
             if context_tokens > max_tokens:
                 break
-            messages.append({
+            history.append({
                 "role": "user" if mem['role'] != self.role['name'] else "assistant",
                 "content": mem['text']
             })
 
+        messages.extend(reversed(history))
         messages.append({"role": "user", "content": input_text})
 
         response = self.client.chat.completions.create(
@@ -321,8 +326,8 @@ class DualChatbot:
         self.engine = engine
         self.proficiency_level = proficiency_level
         self.language = language
-        self.chatbots = role_dict
-        for k in role_dict.keys():
+        self.chatbots = deepcopy(role_dict)
+        for k in self.chatbots:
             self.chatbots[k].update({'chatbot': Chatbot(engine, llm_server)})
 
         self.chatbots['role1']['chatbot'].instruct(

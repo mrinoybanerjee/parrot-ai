@@ -135,3 +135,12 @@ def test_dual_chatbot_step(dual_chatbot):
     response1, response2, translate1, translate2 = dual_chatbot.step()
     assert all(item == "Mocked LLM response" for item in [response1, response2,
                                                           translate1, translate2])
+
+
+def test_history_is_sent_in_chronological_order(chatbot):
+    chatbot.instruct({'name': 'A', 'action': ''}, {'name': 'B', 'action': ''},
+                     'English', 'a cafe', 'Short', 'Beginner', 'Conversation')
+    chatbot.memory = [{'role': 'A', 'text': 'first'}, {'role': 'A', 'text': 'second'}]
+    chatbot.generate_response('third')
+    sent = chatbot.client.chat.completions.create.call_args.kwargs['messages']
+    assert [message['content'] for message in sent[1:]] == ['first', 'second', 'third']

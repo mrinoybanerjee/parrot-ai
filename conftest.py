@@ -107,7 +107,9 @@ def mock_streamlit(monkeypatch):
     # Ensure BACKEND_SERVER is set to the correct URL
     monkeypatch.setenv("BACKEND_SERVER", "http://localhost:8000")
 
-    with mock.patch('streamlit.container') as mock_container:
+    with mock.patch('streamlit.spinner'), mock.patch('frontend.src.utils.time.sleep'), \
+            mock.patch('frontend.src.utils.gTTS'), \
+            mock.patch('streamlit.container') as mock_container:
         with mock.patch('streamlit.columns') as mock_columns:
             mock_column = mock.MagicMock()
             mock_columns.return_value = [mock_column, mock_column, mock_column]

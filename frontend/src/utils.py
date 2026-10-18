@@ -65,7 +65,7 @@ def show_messages(mesg_1, mesg_2, message_counter,
         # Show original exchange
         message(f"{mesg['content']}", is_user=i == 1, avatar_style="bottts",
                 seed=AVATAR_SEED[i],
-                key=message_counter)
+                key=str(message_counter))
         message_counter += 1
 
         # Mimic time interval between conversations
@@ -76,7 +76,7 @@ def show_messages(mesg_1, mesg_2, message_counter,
         if translation:
             message(f"{mesg['translation']}", is_user=i == 1, avatar_style="bottts",
                     seed=AVATAR_SEED[i],
-                    key=message_counter)
+                    key=str(message_counter))
             message_counter += 1
 
         # Append audio to the exchange if audio flag is set
