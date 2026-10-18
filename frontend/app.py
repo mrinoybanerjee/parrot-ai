@@ -9,14 +9,13 @@ from src.utils import initialize_session_state
 BACKEND_SERVER = os.environ.get('BACKEND_SERVER', 'http://localhost:8000')
 
 # Set the title of the app
-st.title('Parrot-AI 🦜🌍')
+st.set_page_config(page_title='Parrot AI', page_icon='🦜', layout='centered')
+st.title('Parrot AI')
 
 # Set the description of the app
-st.markdown("""
-This app generates conversation or debate scripts to aid in language learning 🎯
-
-Choose your desired settings and press 'Generate' to start 🚀
-""")
+st.markdown("Practice a conversation or debate in your target language. "
+            "Choose your settings, then select Generate.")
+st.caption("Generation uses your configured model server. Play audio sends text to Google TTS.")
 
 # Define the language learning settings
 LANGUAGES = ['English', 'Hindi', 'German', 'Spanish', 'French']
@@ -24,15 +23,15 @@ SESSION_LENGTHS = ['Short', 'Long']
 PROFICIENCY_LEVELS = ['Beginner', 'Intermediate', 'Advanced']
 
 # Add a selectbox for learning mode
-learning_mode = st.sidebar.selectbox('Learning Mode 📖', ('Conversation', 'Debate'))
+learning_mode = st.sidebar.selectbox('Learning mode', ('Conversation', 'Debate'))
 
 # Configure settings based on the selected learning mode
 if learning_mode == 'Conversation':
-    role1 = st.sidebar.text_input('Role 1 🎭', 'Customer')
-    action1 = st.sidebar.text_input('Action 1 🗣️', 'ordering food')
-    role2 = st.sidebar.text_input('Role 2 🎭', 'Waitstaff')
-    action2 = st.sidebar.text_input('Action 2 🗣️', 'taking the order')
-    scenario = st.sidebar.text_input('Scenario 🎥', 'at a restaurant')
+    role1 = st.sidebar.text_input('First role', 'Customer')
+    action1 = st.sidebar.text_input('First action', 'ordering food')
+    role2 = st.sidebar.text_input('Second role', 'Waitstaff')
+    action2 = st.sidebar.text_input('Second action', 'taking the order')
+    scenario = st.sidebar.text_input('Scenario', 'at a restaurant')
     time_delay = 2
 
     # Configure role dictionary
@@ -42,7 +41,7 @@ if learning_mode == 'Conversation':
     }
 
 else:
-    scenario = st.sidebar.text_input('Debate Topic 💬', 'Climate change')
+    scenario = st.sidebar.text_input('Debate topic', 'Climate change')
 
     # Configure role dictionary
     role_dict = {
@@ -52,9 +51,9 @@ else:
     time_delay = 5
 
 # Add selectboxes for language, session length, and proficiency level
-language = st.sidebar.selectbox('Target Language 🔤', LANGUAGES)
-session_length = st.sidebar.selectbox('Session Length ⏰', SESSION_LENGTHS)
-proficiency_level = st.sidebar.selectbox('Proficiency Level 🏆', PROFICIENCY_LEVELS)
+language = st.sidebar.selectbox('Language', LANGUAGES)
+session_length = st.sidebar.selectbox('Session length', SESSION_LENGTHS)
+proficiency_level = st.sidebar.selectbox('Proficiency', PROFICIENCY_LEVELS)
 
 # Initialize session states
 initialize_session_state()

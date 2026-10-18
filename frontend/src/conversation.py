@@ -4,7 +4,11 @@ between two chatbots. """
 import streamlit as st
 import requests
 import os
-from src.utils import show_messages
+import uuid
+try:
+    from .utils import show_messages
+except ImportError:
+    from src.utils import show_messages
 
 # Set the backend server URL from environment variable or default to localhost
 BACKEND_SERVER = os.environ.get('BACKEND_SERVER', 'http://localhost:8000')
@@ -21,6 +25,12 @@ AVATAR_SEED = [123, 42]
 
 # Define the engine to use for the chatbot
 ENGINE = 'OpenAI'
+
+
+def session_headers():
+    if "session_id" not in st.session_state:
+        st.session_state["session_id"] = uuid.uuid4().hex
+    return {"X-Session-ID": st.session_state["session_id"]}
 
 
 def generate_conversation(role_dict, language, scenario, proficiency_level,
@@ -45,7 +55,8 @@ def generate_conversation(role_dict, language, scenario, proficiency_level,
           backend server.
     """
     try:
-        response = requests.post(f"{BACKEND_SERVER}/generate_conversation", json={
+        response = requests.post(f"{BACKEND_SERVER}/generate_conversation",
+                                 headers=session_headers(), timeout=(5, 510), json={
             "engine": ENGINE,
             "role_dict": role_dict,
             "language": language,
@@ -84,7 +95,17 @@ def setup_conversation(conversation_container, translate_col, original_col, audi
     """
     if st.sidebar.button('Generate'):
         # Reset the conversation on the backend
-        requests.post(f"{BACKEND_SERVER}/reset_conversation")
+        try:
+            response = requests.post(f"{BACKEND_SERVER}/reset_conversation",
+                                     headers=session_headers(), timeout=(5, 15))
+            response.raise_for_status()
+        except requests.RequestException:
+            st.error("Could not reset the conversation. Check the backend and retry.")
+            return
+        st.session_state.pop("summary", None)
+        st.session_state["audio_flag"] = False
+        st.session_state["translate_flag"] = False
+        st.session_state["batch_flag"] = False
         st.session_state["first_time_exec"] = True
         st.session_state['bot1_mesg'] = []
         st.session_state['bot2_mesg'] = []
@@ -109,6 +130,9 @@ def setup_conversation(conversation_container, translate_col, original_col, audi
                     result = generate_conversation(role_dict, language, scenario,
                                                    proficiency_level, learning_mode,
                                                    session_length)
+                    if not result:
+                        st.session_state["first_time_exec"] = False
+                        return
                     if result:
                         output1, output2, translate1, translate2 = (
                             result["response1"],
@@ -177,21 +201,26 @@ def setup_conversation(conversation_container, translate_col, original_col, audi
         summary_expander = st.expander('Key Learning Points')
         if "summary" not in st.session_state:
             with st.spinner('Generating summary...'):
-                response = requests.post(f"{BACKEND_SERVER}/generate_summary", json={
-                    "engine": ENGINE,
-                    "role_dict": role_dict,
-                    "language": language,
-                    "scenario": scenario,
-                    "proficiency_level": proficiency_level,
-                    "learning_mode": learning_mode,
-                    "session_length": session_length
-                })
-                if response.status_code == 200:
-                    summary = response.json()["summary"]
-                    st.session_state["summary"] = summary
-                else:
-                    st.error("Failed to generate summary")
-                    summary = "Failed to generate summary"
+                try:
+                    response = requests.post(f"{BACKEND_SERVER}/generate_summary",
+                                             headers=session_headers(), timeout=(5, 180), json={
+                        "engine": ENGINE,
+                        "role_dict": role_dict,
+                        "language": language,
+                        "scenario": scenario,
+                        "proficiency_level": proficiency_level,
+                        "learning_mode": learning_mode,
+                        "session_length": session_length
+                    })
+                    if response.status_code == 200:
+                        summary = response.json()["summary"]
+                        st.session_state["summary"] = summary
+                    else:
+                        st.error("Failed to generate summary")
+                        summary = "Failed to generate summary"
+                except requests.RequestException:
+                    st.error("Could not generate learning points. Check the backend and retry.")
+                    summary = "Learning points are unavailable."
         else:
             summary = st.session_state["summary"]
 

@@ -1,4 +1,8 @@
-""" Evaluation script for Parrot-AI conversational AI engine. """
+"""Legacy exploratory experiment; not a current performance/quality benchmark.
+
+See EVALUATION_RESULTS.md for methodology limits. This script downloads models
+and NLTK data. Use scripts/benchmark_local.py for the model-free local check.
+"""
 
 import time
 import os
@@ -161,8 +165,8 @@ def visualize_results(latencies, output_speeds, similarity_scores, levenshtein_s
         ax1.set_ylabel('Frequency', fontsize=12)
         
         sns.histplot(output_speeds, ax=ax2, kde=True, color='green')
-        ax2.set_title('Distribution of Output Speeds', fontsize=16)
-        ax2.set_xlabel('Output Speed (tokens/second)', fontsize=12)
+        ax2.set_title('Response1 token / endpoint-time ratio', fontsize=16)
+        ax2.set_xlabel('DistilBERT tokens / endpoint seconds', fontsize=12)
         ax2.set_ylabel('Frequency', fontsize=12)
         
         plt.tight_layout()
@@ -176,7 +180,7 @@ def visualize_results(latencies, output_speeds, similarity_scores, levenshtein_s
         plt.figure(figsize=(12, 8))
         x, y = zip(*response_time_vs_length)
         sns.regplot(x=x, y=y, scatter_kws={'alpha':0.5}, line_kws={'color': 'red'})
-        plt.title('Response Time vs Input Length', fontsize=16)
+        plt.title('Exploratory plot: current API ignores input_text', fontsize=16)
         plt.xlabel('Input Length (words)', fontsize=12)
         plt.ylabel('Response Time (seconds)', fontsize=12)
         plt.savefig(os.path.join(assets_folder, 'response_time_vs_length.png'), dpi=300)
@@ -278,7 +282,7 @@ def main():
                 output_speed = count_tokens(output) / latency if latency > 0 else 0
                 output_speeds.append(output_speed)
                 logger.info("Case %d latency: %.2f seconds", i+1, latency)
-                logger.info("Case %d output speed: %.2f tokens/second", i+1,
+                logger.info("Case %d response1 DistilBERT tokens / endpoint seconds: %.2f", i+1,
                             output_speed)
 
             similarity_score = calculate_cosine_similarity(case["expected"], output)
@@ -318,7 +322,7 @@ def main():
                       if len(load_test_results) >= 20 else None)
     logger.info("Average Latency: %.2f seconds", avg_latency)
 
-    logger.info("Average Output Speed: %.2f tokens/second", avg_output_speed)
+    logger.info("Average response1 DistilBERT tokens / endpoint seconds: %.2f", avg_output_speed)
     logger.info("Average Cosine Similarity Score: %.2f", avg_similarity)
     logger.info("Average Levenshtein Distance: %.2f", avg_levenshtein)
     logger.info("Load Test - Average response time: %.2f seconds", load_test_avg)
@@ -338,17 +342,16 @@ def main():
 
     # Generate markdown for README
     markdown = f"""
-## Performance/Evaluation Results
+## Historical exploratory measurements
 
-Automated evaluation of Parrot-AI using sophisticated metrics and techniques.
-Here are the results:
+Legacy three-case English experiment. Read the limitations below before using these numbers:
 
 - **Average Latency**: {avg_latency:.2f} seconds
-- **Average Output Speed**: {avg_output_speed:.2f} tokens/second
+- **Response1 DistilBERT tokens / full endpoint seconds**: {avg_output_speed:.2f} tokens/second
 - **Average Cosine Similarity Score**: {avg_similarity:.2f}
 - **Average Levenshtein Distance**: {avg_levenshtein:.2f}
 
-**Load Test Results** (20 concurrent requests):
+**Load Test Results** (20 tasks, five worker threads; successful requests only):
 - Average response time: {load_test_avg:.2f} seconds
 """
     if load_test_95th is not None:
@@ -356,12 +359,14 @@ Here are the results:
     else:
         markdown += "- 95th percentile response time: Not enough data\n"
 
-    markdown += """
-These metrics demonstrate Parrot-AI's performance across various dimensions:
-- The latency and output speed indicate the system's responsiveness.
-- The cosine similarity score shows how well responses align with expected outputs.
-- The Levenshtein distance shows the degree of difference between responses.
-- Load test results demonstrate the system's ability to handle concurrent requests.
+    markdown += f"""
+Limitations:
+- This is not model decoding throughput or a language-quality benchmark.
+- Failed requests are omitted from latency summaries; success rate is unreported.
+- Requests share the legacy conversation because no session ID is supplied.
+- The current API ignores input_text, so the input-length plot is not causal.
+- Similarity/edit distance do not establish translation quality or learning gains.
+- Record raw results, model revision and generation settings before comparisons.
 
 For detailed visualizations of these results, please refer to the following images:
 

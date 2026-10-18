@@ -1,0 +1,546 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-10-18T20:14:42.785977+00:00",
+  "commit": "03dbb8e4b60c9245f32a56c79746a2b8e555c05c",
+  "worktree_changes": [
+    "EVALUATION_RESULTS.md",
+    "README.md",
+    "evaluate.py"
+  ],
+  "environment": {
+    "python": "3.12.12",
+    "os": "macOS-26.6.2-arm64-arm-64bit",
+    "architecture": "arm64",
+    "logical_cpus": 10,
+    "packages": {
+      "fastapi": "0.146.0",
+      "starlette": "1.9.0",
+      "httpx": "0.28.1",
+      "openai": "3.35.1",
+      "pydantic": "2.14.1"
+    }
+  },
+  "source_sha256": {
+    "backend/app.py": "ed816c9e7a66c93faf98f24aa7a64ec2ccbd22552287d8a01809df1418195740",
+    "backend/src/chatbot.py": "1761d22f7916737de3de0129005aaa544323179196caa9546a3a5fce79969273",
+    "scripts/benchmark_local.py": "e8cedd3dc6255314c7f9613f3bb48e40d1c836235d13da9abd164a2d52a5c78f"
+  },
+  "workload": "ASGI TestClient, real OpenAI SDK, loopback fixed fake model; German/Beginner/Conversation/Short; 10 unique sessions and 2 turns per concurrency; 4 model calls per turn; no deliberate model delay",
+  "limitations": "No browser, application network hop, inference, audio, language quality, production capacity or user impact measured. 20 samples per concurrency; timing is informational, no performance gate.",
+  "summary": [
+    {
+      "concurrency": 1,
+      "requests": 20,
+      "successes": 20,
+      "unexpected_outputs": 0,
+      "p50_ms": 3.721604007296264,
+      "p95_ms_nearest_rank": 4.427541978657246
+    },
+    {
+      "concurrency": 2,
+      "requests": 20,
+      "successes": 20,
+      "unexpected_outputs": 0,
+      "p50_ms": 7.032958441413939,
+      "p95_ms_nearest_rank": 8.098040940240026
+    },
+    {
+      "concurrency": 5,
+      "requests": 20,
+      "successes": 20,
+      "unexpected_outputs": 0,
+      "p50_ms": 17.203479539602995,
+      "p95_ms_nearest_rank": 27.570916805416346
+    }
+  ],
+  "model_calls": 275,
+  "invalid_or_mixed_session_contexts": 0,
+  "failure_checks": {
+    "injected_model_error_status": 502,
+    "retry_status": 200,
+    "busy_status": 503,
+    "busy_elapsed_ms": 5012.712457915768
+  },
+  "requests": [
+    {
+      "concurrency": 1,
+      "session": 0,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 45.13124981895089,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 1,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 4.427541978657246,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 2,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 4.206042038276792,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 3,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 4.015417071059346,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 4,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 3.8399170152843,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 5,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 3.920166054740548,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 6,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 3.8313327822834253,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 7,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 3.805333049967885,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 8,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 3.8889171555638313,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 9,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 3.7529170513153076,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 0,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 3.6902909632772207,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 1,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 3.401458030566573,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 2,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 3.4687079023569822,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 3,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 3.3390838652849197,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 4,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 3.5315840505063534,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 5,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 3.3837079536169767,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 6,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 3.3448340836912394,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 7,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 3.322458826005459,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 8,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 3.4822500310838223,
+      "expected_output": true
+    },
+    {
+      "concurrency": 1,
+      "session": 9,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 3.381958929821849,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 0,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 4.49550012126565,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 1,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 8.098040940240026,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 2,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 7.418917026370764,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 3,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 7.738750195130706,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 4,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 7.672334089875221,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 5,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 6.867666030302644,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 6,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 7.011957932263613,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 7,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 7.3112500831484795,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 8,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 7.625584024935961,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 9,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 6.6242089960724115,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 0,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 5.132416961714625,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 1,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 8.680916158482432,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 2,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 7.0654170121997595,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 3,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 6.736542098224163,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 4,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 7.053958950564265,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 5,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 7.3366668075323105,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 6,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 6.914416095241904,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 7,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 6.858291104435921,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 8,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 6.891832919791341,
+      "expected_output": true
+    },
+    {
+      "concurrency": 2,
+      "session": 9,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 5.356082925572991,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 0,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 17.054792027920485,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 1,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 20.582875004038215,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 2,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 31.713665928691626,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 3,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 23.834292078390718,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 4,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 27.570916805416346,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 5,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 18.74833391048014,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 6,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 17.943417187780142,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 7,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 17.524959053844213,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 8,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 16.846958082169294,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 9,
+      "turn": 1,
+      "status": 200,
+      "elapsed_ms": 15.920250210911036,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 0,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 13.25033395551145,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 1,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 6.358749931678176,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 2,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 9.540833067148924,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 3,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 20.222207996994257,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 4,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 16.628499841317534,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 5,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 17.493000021204352,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 6,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 17.352167051285505,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 7,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 16.88308292068541,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 8,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 16.00441592745483,
+      "expected_output": true
+    },
+    {
+      "concurrency": 5,
+      "session": 9,
+      "turn": 2,
+      "status": 200,
+      "elapsed_ms": 14.445415930822492,
+      "expected_output": true
+    }
+  ]
+}

@@ -1,16 +1,5 @@
-fastapi
-uvicorn
-pydantic==1.10.2
-python-dotenv==1.0.1
-openai
-streamlit
-streamlit-chat
-gtts
-pytest
+-r tests/requirements.txt
 flake8
-requests-mock
-mock
-pytest-cov
 nltk
 transformers
 torch
