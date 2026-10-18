@@ -1,36 +1,45 @@
+# Historical exploratory measurements
 
-## Performance/Evaluation Results
+These numbers are retained from the original experiment. They are not current
+performance or language-quality benchmarks. The original run date, raw request
+results, model revision and generation settings were not committed.
 
-Automated evaluation of Parrot-AI using sophisticated metrics and techniques.
-Here are the results:
+| Reported value | What the script measures |
+|---|---|
+| Mean latency: 31.61 s | Successful full endpoint requests in a three-case English experiment |
+| Reported speed: 1.54 tokens/s | DistilBERT token count for `response1`, divided by full endpoint latency |
+| Mean cosine similarity: 0.74 | Mean-pooled DistilBERT similarity to one English reference per case |
+| Mean edit distance: 166.67 | Character edit distance to those references |
+| Load mean: 72.47 s | Successful requests only, from 20 tasks using five worker threads |
+| Load p95 | Not reported; the script recorded too few successful samples |
 
-- **Average Latency**: 31.61 seconds
-- **Average Output Speed**: 1.54 tokens/second
-- **Average Cosine Similarity Score**: 0.74
-- **Average Levenshtein Distance**: 166.67
+## Interpretation limits
 
-**Load Test Results** (20 concurrent requests):
-- Average response time: 72.47 seconds
-- 95th percentile response time: Not enough data
+- The reported speed is not model decoding throughput. Endpoint time includes
+  generation of other outputs that the numerator does not count.
+- The load test did not run 20 simultaneous workers. It omits failed/timed-out
+  requests from latency summaries and does not report a success rate.
+- Requests omit session IDs and share the legacy conversation. They do not
+  measure independent users.
+- The current API does not consume the script's `input_text` field. The
+  input-length plot therefore does not establish an input-length effect.
+- Similarity and edit distance do not establish translation correctness,
+  proficiency fit, speech quality or learning gains.
 
-These metrics demonstrate Parrot-AI's performance across various dimensions:
-- The latency and output speed indicate the system's responsiveness.
-- The cosine similarity score shows how well responses align with expected outputs.
-- The Levenshtein distance shows the degree of difference between responses.
-- Load test results demonstrate the system's ability to handle concurrent requests.
+Do not use these figures to compare current versions. The optional legacy
+`evaluate.py` still requires services, additional packages and model/NLTK
+downloads. It is not part of CI. For a model-free application check, use
+[`scripts/benchmark_local.py`](scripts/benchmark_local.py) and the
+[synthetic benchmark report](reports/synthetic-api-20261018.md).
 
-For detailed visualizations of these results, please refer to the following images:
+## Original plots and reported hardware
 
-![Latency and Output Speed Distribution](assets/latency_output_speed.png)
+The plots remain for provenance and have the same limitations described above.
 
-![Response Time vs Input Length](assets/response_time_vs_length.png)
+![Original latency and reported speed distributions](assets/latency_output_speed.png)
 
-![Similarity and Levenshtein Scores](assets/similarity_levenshtein.png)
+![Original input-length plot; current API ignores input_text](assets/response_time_vs_length.png)
 
-**Hardware Information**:
+![Original similarity and edit-distance scores](assets/similarity_levenshtein.png)
 
-CPU: arm (8 cores, 8 threads)
-RAM: 8 GB
-Disk: 228 GB total
-OS: Darwin 23.3.0
-
+Reported hardware: ARM, eight cores/eight threads, 8 GB RAM, Darwin 23.3.0.

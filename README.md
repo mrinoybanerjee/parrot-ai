@@ -14,6 +14,17 @@ Google.** Conversation generation and translation use the configured model serve
 [Watch the original demo](https://youtu.be/XQmrTN0QzQQ). Screenshots and the demo
 show the original interface; current labels may differ.
 
+## Engineering focus
+
+The application connects configurable role prompts, translations and learning
+points through a local model API. Session isolation, bounded requests and clear
+failure states support repeatable practice. The models and frameworks are
+third-party components; language quality and learner outcomes remain unmeasured.
+
+For example, choose German, Beginner and Conversation. Set a café scenario with
+customer and barista roles, generate an exchange, then inspect the translations
+and learning points. This describes the workflow, not guaranteed model quality.
+
 ## Run locally
 
 Requires Python 3.12 and a running OpenAI-compatible model server, such as
@@ -69,7 +80,7 @@ python -m pytest --cov=backend --cov=frontend --cov-report=term-missing
 Or run `docker compose run --rm --no-deps test` after building the test
 image with `docker compose build test`. Tests use synthetic requests and mocked
 model/audio services; no model server, model download, or paid API is needed.
-CI runs these tests and builds the containers. It does not publish images,
+The CI workflow is configured to run these tests and build the containers. It does not publish images,
 deploy production services, or run live model evaluations.
 
 ## Architecture and limits
@@ -97,12 +108,17 @@ Browser → Streamlit → FastAPI → local model server
 
 ## Evaluation
 
-[EVALUATION_RESULTS.md](EVALUATION_RESULTS.md) contains historical results, not
-measurements from current CI. `evaluate.py` is an optional manual experiment
+[EVALUATION_RESULTS.md](EVALUATION_RESULTS.md) retains historical exploratory
+results and their methodology limits. Its reported speed is not model decoding
+throughput, and its load test used five workers, not 20. `evaluate.py` is an optional manual experiment
 requiring running services, additional packages from `requirements.txt`, and
 model/NLTK downloads. It is not part of the normal setup or test suite. Unit tests
 do not establish translation accuracy, speech quality, throughput, or production
 readiness.
+
+The [model-free API benchmark](reports/synthetic-api-20261018.md) uses a loopback
+fake model and the real API/SDK. It checks synthetic session separation and
+failure handling; its timings do not include model inference or the browser.
 
 ## Project layout
 
