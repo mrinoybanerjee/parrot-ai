@@ -83,6 +83,17 @@ def test_generate_response(chatbot):
     assert response == "Mocked LLM response"
 
 
+def test_model_identifier_defaults_and_can_match_the_local_server(chatbot, monkeypatch):
+    chatbot.instruct({'name': 'A', 'action': ''}, {'name': 'B', 'action': ''},
+                     'English', 'a cafe', 'Short', 'Beginner', 'Conversation')
+    monkeypatch.delenv('LLM_MODEL', raising=False)
+    chatbot.generate_response('Hello')
+    assert chatbot.client.chat.completions.create.call_args.kwargs['model'] == 'LLaMA_CPP'
+    monkeypatch.setenv('LLM_MODEL', 'qwen3:4b')
+    chatbot.generate_response('Hello')
+    assert chatbot.client.chat.completions.create.call_args.kwargs['model'] == 'qwen3:4b'
+
+
 def test_translate(chatbot):
     """
     Test the translate method of the Chatbot class.

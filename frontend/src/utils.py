@@ -4,7 +4,6 @@ session state and display messages."""
 from io import BytesIO
 import time
 import streamlit as st
-from streamlit_chat import message
 from gtts import gTTS
 
 # Define language codes for speech synthesis
@@ -15,10 +14,6 @@ AUDIO_SPEECH = {
     'Spanish': 'es',
     'French': 'fr'
 }
-
-# Define avatar seeds for consistent avatar generation
-AVATAR_SEED = [123, 42]
-
 
 def initialize_session_state():
     """
@@ -62,29 +57,22 @@ def show_messages(mesg_1, mesg_2, message_counter,
         int: The updated message counter.
     """
     for i, mesg in enumerate([mesg_1, mesg_2]):
-        # Show original exchange
-        message(f"{mesg['content']}", is_user=i == 1, avatar_style="bottts",
-                seed=AVATAR_SEED[i],
-                key=str(message_counter))
-        message_counter += 1
-
-        # Mimic time interval between conversations
+        # Native chat elements do not depend on a separate component iframe.
+        with st.chat_message("assistant" if i == 0 else "user"):
+            st.markdown(f"**{mesg['role']}**")
+            st.write(mesg['content'])
+            message_counter += 1
+            if translation:
+                st.caption("English translation")
+                st.write(mesg['translation'])
+                message_counter += 1
+            if audio:
+                tts = gTTS(text=mesg['content'], lang=AUDIO_SPEECH[mesg['language']])
+                sound_file = BytesIO()
+                tts.write_to_fp(sound_file)
+                st.audio(sound_file)
         if not batch:
             time.sleep(time_delay)
-
-        # Show translated exchange if translation flag is set
-        if translation:
-            message(f"{mesg['translation']}", is_user=i == 1, avatar_style="bottts",
-                    seed=AVATAR_SEED[i],
-                    key=str(message_counter))
-            message_counter += 1
-
-        # Append audio to the exchange if audio flag is set
-        if audio:
-            tts = gTTS(text=mesg['content'], lang=AUDIO_SPEECH[mesg_1['language']])
-            sound_file = BytesIO()
-            tts.write_to_fp(sound_file)
-            st.audio(sound_file)
 
     return message_counter
 

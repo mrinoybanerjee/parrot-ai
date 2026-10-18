@@ -93,6 +93,9 @@ def setup_conversation(conversation_container, translate_col, original_col, audi
         session_length (str): Length of the session, either 'Short' or 'Long'.
         time_delay (int): Time delay between messages.
     """
+    settings = dict(learning_mode=learning_mode, role_dict=role_dict, language=language,
+                    scenario=scenario, proficiency_level=proficiency_level,
+                    session_length=session_length, time_delay=time_delay)
     if st.sidebar.button('Generate'):
         # Reset the conversation on the backend
         try:
@@ -110,6 +113,7 @@ def setup_conversation(conversation_container, translate_col, original_col, audi
         st.session_state['bot1_mesg'] = []
         st.session_state['bot2_mesg'] = []
         st.session_state['message_counter'] = 0
+        st.session_state['conversation_settings'] = settings
 
         with conversation_container:
             # Display the conversation or debate scenario
@@ -156,6 +160,17 @@ def setup_conversation(conversation_container, translate_col, original_col, audi
                         st.session_state.bot2_mesg.append(mesg_2)
 
     if 'dual_chatbots' in st.session_state:
+        generated = st.session_state.get('conversation_settings', settings)
+        if generated != settings:
+            st.info('Settings changed. Select Generate to start a new conversation.')
+        # Preserve the labels and summary configuration of the visible messages.
+        learning_mode = generated['learning_mode']
+        role_dict = generated['role_dict']
+        language = generated['language']
+        scenario = generated['scenario']
+        proficiency_level = generated['proficiency_level']
+        session_length = generated['session_length']
+        time_delay = generated['time_delay']
         # Display buttons for translating, showing original text, and playing audio
         if translate_col.button('Translate to English'):
             st.session_state['translate_flag'] = True

@@ -7,6 +7,7 @@ services:
       - "127.0.0.1:8000:8000"
     environment:
       - LLM_SERVER=http://host.docker.internal:8080
+      - LLM_MODEL=${LLM_MODEL:-LLaMA_CPP}
     networks:
       - parrot-ai-network
 

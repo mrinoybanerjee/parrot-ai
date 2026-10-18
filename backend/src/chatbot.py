@@ -229,7 +229,7 @@ class Chatbot:
         messages.append({"role": "user", "content": input_text})
 
         response = self.client.chat.completions.create(
-            model="LLaMA_CPP",
+            model=os.environ.get("LLM_MODEL", "LLaMA_CPP"),
             messages=messages
         )
         return response.choices[0].message.content.replace("</s>", "").strip()

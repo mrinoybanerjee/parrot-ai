@@ -1,6 +1,5 @@
-streamlit
+streamlit>=1.24,<2
 requests
 python-dotenv
 gtts
-streamlit-chat
 requests-mock
