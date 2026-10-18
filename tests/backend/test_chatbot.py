@@ -144,3 +144,25 @@ def test_history_is_sent_in_chronological_order(chatbot):
     chatbot.generate_response('third')
     sent = chatbot.client.chat.completions.create.call_args.kwargs['messages']
     assert [message['content'] for message in sent[1:]] == ['first', 'second', 'third']
+
+
+def test_translation_uses_english_instruction_without_changing_roleplay(chatbot):
+    chatbot.instruct({'name': 'A', 'action': ''}, {'name': 'B', 'action': ''},
+                     'Spanish', 'a cafe', 'Short', 'Beginner', 'Conversation')
+    role_prompt = chatbot.prompt
+    chatbot.translate('Hola')
+    sent = chatbot.client.chat.completions.create.call_args.kwargs['messages']
+    assert sent[0]['content'].startswith("Translate the user's text from Spanish to English.")
+    assert 'Use ONLY Spanish' not in sent[0]['content']
+    assert sent[-1]['content'] == 'Hola'
+    chatbot.generate_response('Continue')
+    assert chatbot.client.chat.completions.create.call_args.kwargs['messages'][0]['content'] == role_prompt
+
+
+def test_summary_uses_tutor_instruction_instead_of_roleplay(dual_chatbot):
+    dual_chatbot.summary()
+    bot = dual_chatbot.chatbots['role1']['chatbot']
+    sent = bot.client.chat.completions.create.call_args.kwargs['messages']
+    assert sent[0]['content'].startswith('You are a language tutor.')
+    assert 'Explain learning points in English' in sent[0]['content']
+    assert 'Use ONLY Hindi' not in sent[0]['content']

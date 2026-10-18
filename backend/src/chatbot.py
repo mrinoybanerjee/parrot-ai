@@ -191,7 +191,7 @@ class Chatbot:
 
         return prompt
 
-    def generate_response(self, input_text):
+    def generate_response(self, input_text, *, system_prompt=None):
         """
         Generate a response based on the input text.
 
@@ -210,7 +210,7 @@ class Chatbot:
                 "Call instruct() before generate_response()."
             )
         messages = [
-            {"role": "system", "content": self.prompt},
+            {"role": "system", "content": self.prompt if system_prompt is None else system_prompt},
         ]
 
         max_tokens = 4096 - 500
@@ -262,11 +262,11 @@ class Chatbot:
         if self.language == 'English':
             translation = 'Translation: ' + message
         else:
-            instruction = (
-                f"Translate the following sentence from {self.language} "
-                f"to English: {message}"
+            translation = self.generate_response(
+                message,
+                system_prompt=(f"Translate the user's text from {self.language} to English. "
+                               "Return only the translation; do not continue the role-play.")
             )
-            translation = self.generate_response(instruction)
         return translation
 
     def text_to_speech(self, message):
@@ -413,5 +413,10 @@ class DualChatbot:
             f"The conversation is: \n{script}"
         )
 
-        summary = self.chatbots['role1']['chatbot'].generate_response(instruction)
+        summary = self.chatbots['role1']['chatbot'].generate_response(
+            instruction,
+            system_prompt=("You are a language tutor. Explain learning points in English, "
+                           "using examples in the original language when useful. "
+                           "Do not continue the role-play.")
+        )
         return summary
