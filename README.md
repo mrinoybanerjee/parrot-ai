@@ -4,6 +4,11 @@ Generate two-person conversations and debates for language practice, with Englis
 translations and learning points. Choose English, Hindi, German, Spanish, or
 French, a proficiency level, and a short or long session.
 
+**Learning summaries can give incorrect grammar advice.** Treat them as practice
+material, not an answer key. Check corrections with a trusted reference or teacher.
+See the [six-case local teaching diagnostic](reports/teaching-diagnostic-20261018.md)
+for observed failures and the limits of prompt changes.
+
 The Streamlit interface calls a FastAPI backend, which uses an OpenAI-compatible
 local model server. No paid API key is required. **Play audio uses Google
 Text-to-Speech (gTTS): it needs internet access and sends the selected text to
@@ -19,7 +24,8 @@ show the original interface; current labels may differ.
 The application connects configurable role prompts, translations and learning
 points through a local model API. Session isolation, bounded requests and clear
 failure states support repeatable practice. The models and frameworks are
-third-party components; language quality and learner outcomes remain unmeasured.
+third-party components; reliable language quality and learner outcomes are not
+established.
 
 For example, choose German, Beginner and Conversation. Set a café scenario with
 customer and barista roles, generate an exchange, then inspect the translations
