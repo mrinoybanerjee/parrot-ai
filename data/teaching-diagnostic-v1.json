@@ -1,0 +1,11 @@
+{
+  "scope": "Six fixed synthetic English diagnostics; not a teaching-quality benchmark",
+  "cases": [
+    {"id": "observed-apple", "scenario": "Synthetic cafe check: order one apple. Each character replies with one short sentence.", "utterances": ["I'd like one apple.", "Okay, one apple for you.", "Thank you.", "You're welcome.", "Okay, thank you.", "You're welcome.", "Thanks.", "You're welcome."], "ground_truth": "An apple and one apple are both valid. You are welcome and You're welcome are both valid. Do not invent mandatory article or contraction rules."},
+    {"id": "valid-article-contraction", "scenario": "Ordering fruit politely.", "utterances": ["I would like an apple.", "You are welcome."], "ground_truth": "Both are standard English. An is appropriate before apple's vowel sound; a contraction is optional."},
+    {"id": "standard-past-tense", "scenario": "Compare these examples as standard written English.", "utterances": ["I saw her yesterday.", "I seen her yesterday."], "ground_truth": "Saw is correct here in standard written English. Bare seen needs correction; I have seen her yesterday is not the straightforward correction. Do not make universal claims about dialects."},
+    {"id": "singular-they", "scenario": "A friend is ready now.", "utterances": ["My friend Alex said they are ready."], "ground_truth": "Singular they is valid; they are agrees; gender is unspecified; present are may describe continuing readiness. Do not force he/she, they is, or mandatory backshift."},
+    {"id": "ambiguous-chicken", "scenario": "Compare these phrases without assuming whether the speaker means meat or a whole bird.", "utterances": ["I ordered chicken.", "I ordered a chicken."], "ground_truth": "Both may be grammatical. Chicken may mean meat; a chicken may mean one whole bird, including a cooked one. Explain context or uncertainty; do not confidently correct either."},
+    {"id": "ambiguous-school", "scenario": "Compare these phrases without assuming attendance versus a particular destination.", "utterances": ["I go to school.", "I go to the school."], "ground_truth": "Both may be grammatical. Attendance and a particular school/destination differ by context. Do not universally forbid or require the article."}
+  ]
+}
