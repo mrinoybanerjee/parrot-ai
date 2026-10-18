@@ -37,7 +37,7 @@ LLM_SERVER=http://localhost:8080 uvicorn backend.app:app --host 127.0.0.1 --port
 ```
 
 ```sh
-BACKEND_SERVER=http://localhost:8000 streamlit run frontend/app.py
+BACKEND_SERVER=http://localhost:8000 streamlit run frontend/app.py --server.address 127.0.0.1
 ```
 
 Open `http://localhost:8501`. Choose Conversation or Debate, fill in the roles or
