@@ -79,3 +79,13 @@ def test_legacy_no_header_client_still_works(client):
     assert c.post("/generate_conversation", json=PAYLOAD).status_code == 200
     assert c.post("/generate_summary", json=PAYLOAD).status_code == 200
     assert c.post("/reset_conversation").status_code == 200
+
+
+def test_busy_inference_returns_503_without_waiting_for_a_model(client, monkeypatch):
+    c, factory = client
+    lock = MagicMock()
+    lock.acquire.return_value = False
+    monkeypatch.setattr(api, '_lock', lock)
+    assert c.post('/generate_conversation', json=PAYLOAD, headers=A).status_code == 503
+    lock.acquire.assert_called_once_with(timeout=5)
+    factory.assert_not_called()
